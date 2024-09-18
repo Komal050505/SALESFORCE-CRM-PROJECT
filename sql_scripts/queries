@@ -1,0 +1,62 @@
+CREATE TABLE account (
+    account_id VARCHAR(7) PRIMARY KEY,
+    account_name VARCHAR(100) NOT NULL
+);
+
+
+INSERT INTO account (account_id, account_name)
+VALUES
+    ('acc1234', 'Accenture'),
+    ('hcl5678', 'HCL');
+
+
+select * from account
+
+
+------------------------------------------------------------------------------------------------------------------
+CREATE TABLE dealer (
+    dealer_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    dealer_code VARCHAR(10) NOT NULL,
+    opportunity_owner VARCHAR(100) NOT NULL
+);
+
+
+
+INSERT INTO dealer (dealer_code, opportunity_owner)
+VALUES
+    ('CH12', 'Komal Sai'),
+    ('CH12', 'Dinesh'),
+    ('BL04', 'Mahesh'),
+    ('HY01', 'Sainath');
+
+
+
+select * from dealer
+
+
+-----------------------------------------------------------------------------------------------------------------
+
+CREATE TABLE opportunity (
+    opportunity_id VARCHAR PRIMARY KEY DEFAULT uuid_generate_v1(),
+    opportunity_name VARCHAR NOT NULL,
+    account_name VARCHAR NOT NULL,
+    close_date TIMESTAMP NOT NULL,
+    amount FLOAT NOT NULL,
+    description VARCHAR,
+    dealer_id VARCHAR NOT NULL,
+    dealer_code VARCHAR NOT NULL,
+    stage VARCHAR NOT NULL,
+    probability INTEGER,
+    next_step VARCHAR,
+    created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- New fields for currency conversions and amount in words
+    amount_in_words VARCHAR,
+    usd FLOAT,
+    aus FLOAT,
+    cad FLOAT,
+    jpy FLOAT,  -- Japanese Yen
+    eur FLOAT,  -- Euro
+    gbp FLOAT,  -- British Pound
+    cny FLOAT   -- Chinese Yuan
+);
