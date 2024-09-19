@@ -49,13 +49,13 @@ def get_currency_conversion(amount):
     :return: Dictionary with the amount converted to various currencies (USD, AUD, CAD, JPY, EUR, GBP, CNY) and INR.
     """
     # Dummy conversion rates (assumed for demonstration)
-    usd_rate = 0.013
-    aus_rate = 0.019
-    cad_rate = 0.017
+    usd_rate = 10
+    aus_rate = 5
+    cad_rate = 1
     jpy_rate = 1.76
     eur_rate = 0.012
-    gbp_rate = 0.010
-    cny_rate = 0.094
+    gbp_rate = 20
+    cny_rate = 6
 
     # Perform currency conversions
     usd = amount * usd_rate

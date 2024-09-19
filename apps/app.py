@@ -8,30 +8,33 @@ from datetime import datetime  # For date and time manipulations
 
 # Third-Party/External Library Imports
 import pytz  # For timezone handling and conversions
-from flask import Flask, request, jsonify  # For building web applications and handling requests/responses
+from flask import Flask, request, jsonify, abort  # For building web applications and handling requests/responses
 from sqlalchemy.exc import SQLAlchemyError  # For handling SQLAlchemy database exceptions
 
 # # # Project-Specific Imports ********
 # Database Session
 from db_connections.configurations import session  # For managing database session connections
+from email_setup.email_config import RECEIVER_EMAIL
 
 # Email Operations
 from email_setup.email_operations import (  # Email notifications
     notify_success,
     notify_failure,
     notify_opportunity_details,
-    notify_opportunity_update_success
+    notify_opportunity_update_success, notify_warning, format_vehicle_details, send_email,
+    generate_vehicle_details_email_body, generate_detailed_vehicle_email, send_deletion_email
 )
 
 # Logging Utility
 from logging_package.logging_utility import (  # Logging information, errors, and debugging
     log_info,
     log_error,
-    log_debug
+    log_debug, log_warning
 )
 
 # User Models
-from user_models.tables import Account, Dealer, Opportunity  # Database models for account, dealer, and opportunity
+from user_models.tables import Account, Dealer, Opportunity, \
+    VehicleDetails  # Database models for account, dealer, and opportunity
 
 # Utility Functions
 from utilities.reusables import (  # Reusable utility functions for validations and conversions
@@ -673,7 +676,7 @@ def delete_all_dealers():
         log_info("End of delete_dealers function")
 
 
-# ----------------------------------------------- OPPORTUNITY TABLE ------------------------------------------------
+# ----------------------------------------------- OPPORTUNITY TABLE ----------------------------------------------------
 
 
 @app.route('/new-customer', methods=["POST"])
@@ -692,18 +695,29 @@ def create_new_customer():
 
         created_date = datetime.now(pytz.timezone('Asia/Kolkata'))
         payload.update({'created_date': created_date, 'opportunity_id': opportunity_id})
+        log_info(f"Payload after adding created_date and opportunity_id: {payload}")
 
+        account_id = payload.get("account_id")
         account_name = payload.get("account_name")
         account = session.query(Account).filter_by(account_name=account_name).first()
 
         if not account:
-            error_message = f"Account does not exist: {account_name}"
-            log_error(error_message)
-            detailed_error_message = (f"Failed to create customer due to missing account.\n"
-                                      f"Account Name: {account_name}")
-            notify_failure("Customer Creation Failed", detailed_error_message)
-            return jsonify({"error": error_message}), 400
-        log_info(f"Account found: {account_name}")
+            # Account does not exist, add new account
+            new_account_id = str(uuid.uuid4())  # Example of auto-generating a UUID for account_id
+            new_account = Account(
+                account_id=new_account_id,
+                account_name=account_name
+            )
+            session.add(new_account)
+            session.commit()
+            log_info(f"New account added: {account_name}")
+
+            # Notify user about the new account addition
+            account_creation_message = (f"New account added to the database:\n"
+                                        f"Account Name: {account_name}")
+            notify_success("New Account Added", account_creation_message)
+        else:
+            log_info(f"Account found: {account_name}")
 
         dealer_id = payload.get("dealer_id")
         dealer_code = payload.get("dealer_code")
@@ -716,20 +730,31 @@ def create_new_customer():
         ).first()
 
         if not dealer:
-            error_message = f"Invalid dealer details: {dealer_id}, {dealer_code}, {opportunity_owner}"
-            log_error(error_message)
-            detailed_error_message = (f"Failed to create customer due to invalid dealer details.\n"
-                                      f"Dealer ID: {dealer_id}\n"
-                                      f"Dealer Code: {dealer_code}\n"
-                                      f"Opportunity Owner: {opportunity_owner}")
-            notify_failure("Customer Creation Failed", detailed_error_message)
-            return jsonify({"error": error_message}), 400
-        log_info(f"Dealer found: {dealer_id}, {dealer_code}, {opportunity_owner}")
+            # Dealer does not exist, add new dealer
+            new_dealer = Dealer(
+                dealer_id=dealer_id,
+                dealer_code=dealer_code,
+                opportunity_owner=opportunity_owner
+            )
+            session.add(new_dealer)
+            session.commit()
+            log_info(f"New dealer added: {dealer_id}, {dealer_code}, {opportunity_owner}")
+
+            # Notify user about the new dealer addition
+            dealer_creation_message = (f"New dealer added to the database:\n"
+                                       f"Dealer ID: {dealer_id}\n"
+                                       f"Dealer Code: {dealer_code}\n"
+                                       f"Opportunity Owner: {opportunity_owner}")
+            notify_success("New Dealer Added", dealer_creation_message)
+        else:
+            log_info(f"Dealer found: {dealer_id}, {dealer_code}, {opportunity_owner}")
 
         close_date_str = payload.get("close_date")
+
         if close_date_str:
             try:
                 close_date = datetime.strptime(close_date_str, "%Y-%m-%d %H:%M:%S")
+                log_info(f"Parsed close_date: {close_date}")
             except ValueError as e:
                 error_message = f"Invalid date format for close_date: {str(e)}"
                 log_error(error_message)
@@ -738,11 +763,14 @@ def create_new_customer():
                 return jsonify({"error": error_message}), 400
         else:
             close_date = None
+            log_info("No close_date provided, set to None")
 
         probability = payload.get("probability")
+
         if probability is not None:
             try:
                 stage = get_opportunity_stage(probability)
+                log_info(f"Determined stage from probability: {stage}")
             except ValueError as e:
                 error_message = f"Invalid probability value: {str(e)}"
                 log_error(error_message)
@@ -750,12 +778,16 @@ def create_new_customer():
                 return jsonify({"error": error_message}), 400
         else:
             stage = payload.get("stage", "Unknown")
+            log_info(f"No probability provided, defaulting stage to: {stage}")
 
         amount = payload.get("amount")
+
         if amount:
             currency_conversions = get_currency_conversion(amount)
+            log_info(f"Currency conversions for amount {amount}: {currency_conversions}")
         else:
             currency_conversions = {}
+            log_info("No amount provided, currency conversions set to empty")
 
         new_opportunity = Opportunity(
             opportunity_id=opportunity_id,
@@ -777,17 +809,22 @@ def create_new_customer():
             eur=currency_conversions.get("EUR"),
             gbp=currency_conversions.get("GBP"),
             cny=currency_conversions.get("CNY"),
-            amount_in_words=str(amount)
+            amount_in_words=str(amount),
+            vehicle_model=payload.get("vehicle_model"),
+            vehicle_year=payload.get("vehicle_year"),
+            vehicle_color=payload.get("vehicle_color"),
+            vehicle_model_id=payload.get("vehicle_model_id")
         )
+        log_info(f"New Opportunity object created: {new_opportunity}")
 
         session.add(new_opportunity)
         session.commit()
         log_info(f"Opportunity created successfully: {opportunity_id}")
 
         customer_details = new_opportunity.serialize_to_dict()
+        log_info(f"Serialized customer details: {customer_details}")
 
         formatted_currency_conversions = "\n".join(f"{key}: {value}" for key, value in currency_conversions.items())
-
         success_message = (f"Customer created successfully.\n\n\n"
                            f"Opportunity ID: {opportunity_id}\n\n"
                            f"Opportunity Name: {payload.get('opportunity_name')}\n\n"
@@ -797,7 +834,12 @@ def create_new_customer():
                            f"Stage: {stage}\n\n"
                            f"Probability: {payload.get('probability')}\n\n"
                            f"Currency Conversions:\n{formatted_currency_conversions}\n\n"
+                           f"Vehicle Model: {payload.get('vehicle_model')}\n\n"
+                           f"Vehicle Year: {payload.get('vehicle_year')}\n\n"
+                           f"Vehicle Color: {payload.get('vehicle_color')}\n\n"
+                           f"Vehicle model id: {payload.get('vehicle_model_id')}\n\n"
                            f"Created Date: {created_date.strftime('%Y-%m-%d %H:%M:%S')}")
+
         notify_success("Customer Creation Successful", success_message)
 
         return jsonify({
@@ -805,7 +847,14 @@ def create_new_customer():
             "customer_details": customer_details
         }), 201
 
+    except SQLAlchemyError as e:
+        session.rollback()  # Rollback the session on error
+        error_message = f"Error in creating customer: {str(e)}"
+        log_error(error_message)
+        return jsonify({"error": "Internal server error", "details": error_message}), 500
+
     except Exception as e:
+        session.rollback()
         error_message = f"Error in creating customer: {str(e)}"
         log_error(error_message)
         detailed_error_message = f"Failed to create customer due to an internal server error.\nDetails: {str(e)}"
@@ -813,6 +862,7 @@ def create_new_customer():
         return jsonify({"error": "Internal server error", "details": error_message}), 500
 
     finally:
+        session.close()
         log_info("End of create_new_customer function")
 
 
@@ -825,19 +875,40 @@ def get_opportunities():
     log_info("Received request to get opportunities with query parameters")
 
     try:
+        # Retrieve and process query parameters
         opportunity_id = request.args.get('opportunity_id')
-        opportunity_name = request.args.get('opportunity_name')
-        account_name = request.args.get('account_name')
-        stage = request.args.get('stage')
+        opportunity_name = request.args.get('opportunity_name', '').strip()
+        account_name = request.args.get('account_name', '').strip()
+        stage = request.args.get('stage', '').strip()
         probability_min = request.args.get('probability_min', type=int)
         probability_max = request.args.get('probability_max', type=int)
         created_date_start = request.args.get('created_date_start')
-        created_date_end = request.args.get('created_date_end')
+        close_date_end = request.args.get('close_date_end')
+        vehicle_model = request.args.get('vehicle_model', '').strip()
+        vehicle_year_min = request.args.get('vehicle_year_min', type=int)
+        vehicle_year_max = request.args.get('vehicle_year_max', type=int)
+        vehicle_color = request.args.get('vehicle_color', '').strip()
+        amount_min = request.args.get('amount_min', type=float)
+        amount_max = request.args.get('amount_max', type=float)
+        vehicle_model_id = request.args.get('vehicle_model_id', '').strip()
+        case_sensitive = request.args.get('case_sensitive', default='false').lower() == 'true'
 
+        log_info(f"Query parameters retrieved: opportunity_id={opportunity_id}, opportunity_name={opportunity_name}, "
+                 f"account_name={account_name}, stage={stage}, probability_min={probability_min}, "
+                 f"probability_max={probability_max}, created_date_start={created_date_start}, "
+                 f"close_date_end={close_date_end}, vehicle_model={vehicle_model}, "
+                 f"vehicle_year_min={vehicle_year_min}, vehicle_year_max={vehicle_year_max}, "
+                 f"vehicle_color={vehicle_color}, amount_min={amount_min}, amount_max={amount_max}, "
+                 f"vehicle_model_id={vehicle_model_id}, case_sensitive={case_sensitive}")
+
+        # Convert date strings to datetime objects
         if created_date_start:
-            created_date_start = parse_date(created_date_start)
-        if created_date_end:
-            created_date_end = parse_date(created_date_end)
+            created_date_start = datetime.fromisoformat(created_date_start.replace('Z', '+00:00'))
+            log_info(f"Parsed created_date_start: {created_date_start}")
+
+        if close_date_end:
+            close_date_end = datetime.fromisoformat(close_date_end.replace('Z', '+00:00'))
+            log_info(f"Parsed close_date_end: {close_date_end}")
 
         if probability_min is not None and not validate_probability(probability_min):
             raise ValueError(f"Invalid minimum probability: {probability_min}. Must be between 0 and 100")
@@ -850,36 +921,111 @@ def get_opportunities():
 
         if stage:
             stage = validate_stage(stage)
+            log_info(f"Validated stage: {stage}")
+
+        # Validate vehicle_model_id
+        if vehicle_model_id and len(vehicle_model_id) > 255:
+            raise ValueError("Vehicle model ID is too long. Maximum length is 255 characters.")
 
         query = session.query(Opportunity)
+        log_info("Constructed initial query")
 
+        # Apply filters based on query parameters
         if opportunity_id:
             query = query.filter(Opportunity.opportunity_id == opportunity_id)
+            log_info(f"Applied filter: opportunity_id = {opportunity_id}")
+
         if opportunity_name:
             if len(opportunity_name) > 255:
                 raise ValueError("Opportunity name is too long. Maximum length is 255 characters.")
-            query = query.filter(Opportunity.opportunity_name.like(f'%{opportunity_name}%'))
+            if case_sensitive:
+                query = query.filter(Opportunity.opportunity_name == opportunity_name)
+            else:
+                query = query.filter(Opportunity.opportunity_name.ilike(f'%{opportunity_name}%'))
+            log_info(
+                f"Applied filter: opportunity_name {'case-sensitive' if case_sensitive else 'case-insensitive'} contains '{opportunity_name}'")
+
         if account_name:
             if len(account_name) > 255:
                 raise ValueError("Account name is too long. Maximum length is 255 characters.")
-            query = query.filter(Opportunity.account_name.like(f'%{account_name}%'))
+            if case_sensitive:
+                query = query.filter(Opportunity.account_name == account_name)
+            else:
+                query = query.filter(Opportunity.account_name.ilike(f'%{account_name}%'))
+            log_info(
+                f"Applied filter: account_name {'case-sensitive' if case_sensitive else 'case-insensitive'} contains '{account_name}'")
+
         if stage:
-            query = query.filter(Opportunity.stage == stage)
+            if case_sensitive:
+                query = query.filter(Opportunity.stage == stage)
+            else:
+                query = query.filter(Opportunity.stage.ilike(f'%{stage}%'))
+            log_info(f"Applied filter: stage {'case-sensitive' if case_sensitive else 'case-insensitive'} = {stage}")
+
         if probability_min is not None:
             query = query.filter(Opportunity.probability >= probability_min)
+            log_info(f"Applied filter: probability >= {probability_min}")
+
         if probability_max is not None:
             query = query.filter(Opportunity.probability <= probability_max)
+            log_info(f"Applied filter: probability <= {probability_max}")
+
         if created_date_start:
             query = query.filter(Opportunity.created_date >= created_date_start)
-        if created_date_end:
-            query = query.filter(Opportunity.created_date <= created_date_end)
+            log_info(f"Applied filter: created_date >= {created_date_start}")
+
+        if close_date_end:
+            query = query.filter(Opportunity.close_date <= close_date_end)
+            log_info(f"Applied filter: close_date <= {close_date_end}")
+
+        if vehicle_model:
+            if len(vehicle_model) > 255:
+                raise ValueError("Vehicle model is too long. Maximum length is 255 characters.")
+            if case_sensitive:
+                query = query.filter(Opportunity.vehicle_model == vehicle_model)
+            else:
+                query = query.filter(Opportunity.vehicle_model.ilike(f'%{vehicle_model}%'))
+            log_info(
+                f"Applied filter: vehicle_model {'case-sensitive' if case_sensitive else 'case-insensitive'} contains '{vehicle_model}'")
+
+        if vehicle_year_min is not None:
+            query = query.filter(Opportunity.vehicle_year >= vehicle_year_min)
+            log_info(f"Applied filter: vehicle_year >= {vehicle_year_min}")
+
+        if vehicle_year_max is not None:
+            query = query.filter(Opportunity.vehicle_year <= vehicle_year_max)
+            log_info(f"Applied filter: vehicle_year <= {vehicle_year_max}")
+
+        if vehicle_color:
+            if len(vehicle_color) > 255:
+                raise ValueError("Vehicle color is too long. Maximum length is 255 characters.")
+            if case_sensitive:
+                query = query.filter(Opportunity.vehicle_color == vehicle_color)
+            else:
+                query = query.filter(Opportunity.vehicle_color.ilike(f'%{vehicle_color}%'))
+            log_info(
+                f"Applied filter: vehicle_color {'case-sensitive' if case_sensitive else 'case-insensitive'} contains '{vehicle_color}'")
+
+        if amount_min is not None:
+            query = query.filter(Opportunity.amount >= amount_min)
+            log_info(f"Applied filter: amount >= {amount_min}")
+
+        if amount_max is not None:
+            query = query.filter(Opportunity.amount <= amount_max)
+            log_info(f"Applied filter: amount <= {amount_max}")
+
+        if vehicle_model_id:
+            query = query.filter(Opportunity.vehicle_model_id == vehicle_model_id)
+            log_info(f"Applied filter: vehicle_model_id = {vehicle_model_id}")
 
         opportunities = query.all()
         total_count = len(opportunities)
         log_info(f"Fetched {total_count} opportunities based on query parameters")
 
         opportunities_list = [opportunity.serialize_to_dict() for opportunity in opportunities]
+        log_info("Serialized opportunities to dictionary format")
 
+        # Notify with detailed opportunity information
         notify_opportunity_details("Get Opportunities Successful", opportunities_list, total_count)
 
         return jsonify({"Opportunities": opportunities_list, "Total count of opportunities": total_count}), 200
@@ -916,7 +1062,9 @@ def update_opportunity():
 
     try:
         data = request.get_json()
+        log_info(f"Request data: {data}")
 
+        # Retrieve and log the input data
         opportunity_id = data.get('opportunity_id')
         opportunity_name = data.get('opportunity_name')
         account_name = data.get('account_name')
@@ -930,18 +1078,30 @@ def update_opportunity():
         next_step = data.get('next_step')
         amount_in_words = data.get('amount_in_words')
         currency_conversions = data.get('currency_conversions', {})
-
+        vehicle_model = data.get('vehicle_model')
+        vehicle_year = data.get('vehicle_year')
+        vehicle_color = data.get('vehicle_color')
+        vehicle_model_id = data.get('vehicle_model_id')
+        log_info(f"Extracted fields: opportunity_id={opportunity_id}, opportunity_name={opportunity_name}, "
+                 f"account_name={account_name}, close_date={close_date}, amount={amount}, description={description}, "
+                 f"dealer_id={dealer_id}, dealer_code={dealer_code}, stage={stage}, probability={probability}, "
+                 f"next_step={next_step}, amount_in_words={amount_in_words}, currency_conversions={currency_conversions}, "
+                 f"vehicle_model={vehicle_model}, vehicle_year={vehicle_year}, vehicle_color={vehicle_color},"
+                 f"vehicle_model_id={vehicle_model_id}")
         if not opportunity_id:
             raise ValueError("Opportunity ID is required.")
+        log_info("Opportunity ID provided.")
 
         if opportunity_name and len(opportunity_name) > 255:
             raise ValueError("Opportunity name is too long. Maximum length is 255 characters.")
 
         if account_name and len(account_name) > 255:
             raise ValueError("Account name is too long. Maximum length is 255 characters.")
+        log_info("Validated length of opportunity_name and account_name.")
 
         if close_date:
             close_date = parse_date(close_date)
+            log_info(f"Parsed close_date: {close_date}")
 
         if amount is not None and not validate_positive_number(amount):
             raise ValueError("Amount must be a positive number.")
@@ -951,28 +1111,39 @@ def update_opportunity():
 
         if stage:
             stage = validate_stage(stage)
+            log_info(f"Validated stage: {stage}")
 
         valid_currencies = ['usd', 'aus', 'cad', 'jpy', 'eur', 'gbp', 'cny']
+
         for currency in valid_currencies:
             if currency in currency_conversions:
                 if not validate_positive_number(currency_conversions[currency]):
                     raise ValueError(f"Invalid value for currency conversion {currency}. Must be a positive number.")
+        log_info("Validated currency conversions.")
+
+        if vehicle_model_id and not isinstance(vehicle_model_id, int):
+            raise ValueError("Vehicle model ID must be an integer.")
 
         opportunity = session.query(Opportunity).filter_by(opportunity_id=opportunity_id).first()
+
         if not opportunity:
             raise ValueError("Opportunity not found.")
+        log_info(f"Found opportunity with ID {opportunity_id}.")
 
         updated_fields = {}
 
         if opportunity_name:
             opportunity.opportunity_name = opportunity_name
             updated_fields['opportunity_name'] = opportunity_name
+
         if account_name:
             opportunity.account_name = account_name
             updated_fields['account_name'] = account_name
+
         if close_date:
             opportunity.close_date = close_date
             updated_fields['close_date'] = close_date
+
         if amount is not None:
             opportunity.amount = amount
             conversions = get_currency_conversion(amount)
@@ -985,27 +1156,53 @@ def update_opportunity():
             opportunity.cny = conversions.get('CNY')
             updated_fields['amount'] = amount
             updated_fields['currency_conversions'] = conversions
+
         if description:
             opportunity.description = description
             updated_fields['description'] = description
+
         if dealer_id:
             opportunity.dealer_id = dealer_id
             updated_fields['dealer_id'] = dealer_id
+
         if dealer_code:
             opportunity.dealer_code = dealer_code
             updated_fields['dealer_code'] = dealer_code
+
         if stage:
             opportunity.stage = stage
             updated_fields['stage'] = stage
+
         if probability is not None:
             opportunity.probability = probability
             updated_fields['probability'] = probability
+
         if next_step:
             opportunity.next_step = next_step
             updated_fields['next_step'] = next_step
+
         if amount_in_words:
             opportunity.amount_in_words = amount_in_words
             updated_fields['amount_in_words'] = amount_in_words
+
+        if vehicle_model:
+            opportunity.vehicle_model = vehicle_model
+            updated_fields['vehicle_model'] = vehicle_model
+
+        if vehicle_year:
+            if not isinstance(vehicle_year, int) or vehicle_year < 1900 or vehicle_year > datetime.now().year:
+                raise ValueError("Vehicle year must be a valid year.")
+            opportunity.vehicle_year = vehicle_year
+            updated_fields['vehicle_year'] = vehicle_year
+
+        if vehicle_color:
+            opportunity.vehicle_color = vehicle_color
+            updated_fields['vehicle_color'] = vehicle_color
+
+        if vehicle_model_id:
+            opportunity.vehicle_model_id = vehicle_model_id
+            updated_fields['vehicle_model_id'] = vehicle_model_id
+
         if currency_conversions:
             opportunity.usd = currency_conversions.get('usd')
             opportunity.aus = currency_conversions.get('aus')
@@ -1016,8 +1213,8 @@ def update_opportunity():
             opportunity.cny = currency_conversions.get('cny')
             updated_fields['currency_conversions'] = currency_conversions
 
+        log_info(f"Updating fields: {updated_fields}")
         session.commit()
-
         log_info(f"Opportunity with ID {opportunity_id} updated successfully.")
 
         notify_opportunity_update_success(
@@ -1093,18 +1290,25 @@ def delete_customer():
 
         if opportunity_id:
             query = query.filter(Opportunity.opportunity_id == opportunity_id)
+
         if account_name:
             query = query.filter(Opportunity.account_name == account_name)
+
         if dealer_id:
             query = query.filter(Opportunity.dealer_id == dealer_id)
+
         if dealer_code:
             query = query.filter(Opportunity.dealer_code == dealer_code)
+
         if opportunity_name:
             query = query.filter(Opportunity.opportunity_name == opportunity_name)
+
         if stage:
             query = query.filter(Opportunity.stage == stage)
+
         if probability is not None:
             query = query.filter(Opportunity.probability == probability)
+
         if close_date:
             query = query.filter(Opportunity.close_date == close_date)
 
@@ -1119,6 +1323,7 @@ def delete_customer():
 
         for customer in customers_to_delete:
             session.delete(customer)
+
         session.commit()
 
         success_message = (
@@ -1147,6 +1352,425 @@ def delete_customer():
 
     finally:
         log_info("End of delete_customer function")
+
+
+# ----------------------------------------------- VEHICLE DETAILS TABLE ------------------------------------------------
+
+
+@app.route('/vehicle-details', methods=['POST'])
+def create_new_vehicle_details():
+    data = request.get_json()
+
+    # Validate incoming data
+    required_fields = ['vehicle_model', 'vehicle_year']
+    for field in required_fields:
+        if field not in data:
+            log_error(f'Missing required field: {field}')
+            return jsonify({'error': f'Missing required field: {field}'}), 400
+
+    if not isinstance(data.get('vehicle_year'), int) or data.get('vehicle_year') <= 0:
+        log_error('Invalid vehicle_year: must be a positive integer')
+        return jsonify({'error': 'Invalid vehicle_year: must be a positive integer'}), 400
+
+    # Additional validations for new fields
+    if 'color' in data and not isinstance(data['color'], str):
+        log_error('Invalid color: must be a string')
+        return jsonify({'error': 'Invalid color: must be a string'}), 400
+
+    if 'sunroof_available' in data and not isinstance(data['sunroof_available'], bool):
+        log_error('Invalid sunroof_available: must be a boolean')
+        return jsonify({'error': 'Invalid sunroof_available: must be a boolean'}), 400
+
+    log_debug(f'Received request to create vehicle details: {data}')
+
+    try:
+        new_vehicle = VehicleDetails(
+            vehicle_model=data['vehicle_model'],
+            vehicle_year=data['vehicle_year'],
+            engine_type=data.get('engine_type'),
+            transmission=data.get('transmission'),
+            fuel_type=data.get('fuel_type'),
+            body_type=data.get('body_type'),
+            warranty_period_years=data.get('warranty_period_years'),
+            color=data.get('color'),
+            model_variant=data.get('model_variant'),
+            tyre_company=data.get('tyre_company'),
+            tyre_size=data.get('tyre_size'),
+            start_type=data.get('start_type'),
+            sunroof_available=data.get('sunroof_available'),
+            gear_type=data.get('gear_type'),
+            vehicle_type=data.get('vehicle_type')
+        )
+
+        session.add(new_vehicle)
+        session.commit()
+
+        vehicle_details = new_vehicle.serialize_to_dict()
+        formatted_details = format_vehicle_details(vehicle_details)
+
+        log_info(f'Created new vehicle details: {formatted_details}')
+
+        # Notify success with formatted vehicle details
+        notify_success(
+            subject='New Vehicle Details Created',
+            details=f'New vehicle details created:\n{formatted_details}'
+        )
+
+        return jsonify({'message': 'Vehicle details created successfully', 'vehicle': vehicle_details}), 201
+
+    except SQLAlchemyError as e:
+        session.rollback()
+        error_message = str(e)
+        log_error(f'Failed to create vehicle details: {error_message}')
+
+        # Notify failure with error message
+        notify_failure(
+            subject='Error Creating Vehicle Details',
+            details=f'Failed to create vehicle details:\n{error_message}'
+        )
+
+        return jsonify({'error': error_message}), 400
+
+
+@app.route('/search-vehicles', methods=['GET'])
+def search_vehicles():
+    """
+    Searches for vehicles based on various query parameters.
+
+    Query Parameters:
+    - vehicle_model_id (str): ID of the vehicle.
+    - vehicle_model (str): Filter by vehicle model.
+    - vehicle_year (int): Filter by vehicle year.
+    - engine_type (str): Filter by engine type.
+    - transmission (str): Filter by transmission type.
+    - fuel_type (str): Filter by fuel type.
+    - body_type (str): Filter by body type.
+    - warranty_period_years (int): Filter by warranty period in years.
+    - color (str): Filter by vehicle color.
+    - model_variant (str): Filter by model variant (e.g., Top, Mid, Base).
+    - tyre_company (str): Filter by tyre company.
+    - tyre_size (str): Filter by tyre size.
+    - start_type (str): Filter by start type (e.g., Key, Push Start).
+    - sunroof_available (bool): Filter by sunroof availability.
+    - gear_type (str): Filter by gear type (e.g., Gear, Gearless).
+    - vehicle_type (str): Filter by vehicle type (e.g., SUV, Sedan, Hatchback).
+
+    :return: JSON response with vehicle details or an error message.
+    """
+    # Extract query parameters
+    vehicle_model_id = request.args.get('vehicle_model_id')
+    vehicle_model = request.args.get('vehicle_model')
+    vehicle_year = request.args.get('vehicle_year', type=int)
+    engine_type = request.args.get('engine_type')
+    transmission = request.args.get('transmission')
+    fuel_type = request.args.get('fuel_type')
+    body_type = request.args.get('body_type')
+    warranty_period_years = request.args.get('warranty_period_years', type=int)
+    color = request.args.get('color')
+    model_variant = request.args.get('model_variant')
+    tyre_company = request.args.get('tyre_company')
+    tyre_size = request.args.get('tyre_size')
+    start_type = request.args.get('start_type')
+    sunroof_available = request.args.get('sunroof_available')
+    gear_type = request.args.get('gear_type')
+    vehicle_type = request.args.get('vehicle_type')
+
+    log_info("Received request with parameters: "
+             f"vehicle_model_id={vehicle_model_id}, vehicle_model={vehicle_model}, vehicle_year={vehicle_year}, "
+             f"engine_type={engine_type}, transmission={transmission}, fuel_type={fuel_type}, body_type={body_type}, "
+             f"warranty_period_years={warranty_period_years}, color={color}, model_variant={model_variant}, "
+             f"tyre_company={tyre_company}, tyre_size={tyre_size}, start_type={start_type}, "
+             f"sunroof_available={sunroof_available}, gear_type={gear_type}, vehicle_type={vehicle_type}")
+
+    try:
+        # Start with the base query
+        query = session.query(VehicleDetails)
+
+        # Apply filters based on provided query parameters
+        if vehicle_model_id:
+            query = query.filter(VehicleDetails.vehicle_model_id == vehicle_model_id)
+        if vehicle_model:
+            query = query.filter(VehicleDetails.vehicle_model.ilike(f"%{vehicle_model}%"))
+        if vehicle_year:
+            query = query.filter(VehicleDetails.vehicle_year == vehicle_year)
+        if engine_type:
+            query = query.filter(VehicleDetails.engine_type.ilike(f"%{engine_type}%"))
+        if transmission:
+            query = query.filter(VehicleDetails.transmission.ilike(f"%{transmission}%"))
+        if fuel_type:
+            query = query.filter(VehicleDetails.fuel_type.ilike(f"%{fuel_type}%"))
+        if body_type:
+            query = query.filter(VehicleDetails.body_type.ilike(f"%{body_type}%"))
+        if warranty_period_years:
+            query = query.filter(VehicleDetails.warranty_period_years == warranty_period_years)
+        if color:
+            query = query.filter(VehicleDetails.color.ilike(f"%{color}%"))
+        if model_variant:
+            query = query.filter(VehicleDetails.model_variant.ilike(f"%{model_variant}%"))
+        if tyre_company:
+            query = query.filter(VehicleDetails.tyre_company.ilike(f"%{tyre_company}%"))
+        if tyre_size:
+            query = query.filter(VehicleDetails.tyre_size.ilike(f"%{tyre_size}%"))
+        if start_type:
+            query = query.filter(VehicleDetails.start_type.ilike(f"%{start_type}%"))
+        if sunroof_available is not None:
+            sunroof_available = sunroof_available.lower() == 'true'
+            query = query.filter(VehicleDetails.sunroof_available == sunroof_available)
+        if gear_type:
+            query = query.filter(VehicleDetails.gear_type.ilike(f"%{gear_type}%"))
+        if vehicle_type:
+            query = query.filter(VehicleDetails.vehicle_type.ilike(f"%{vehicle_type}%"))
+
+        # Execute the query
+        vehicles = query.all()
+        total_count = len(vehicles)
+
+        if total_count == 0:
+            log_error("No vehicle details found with the specified criteria.")
+            send_email(RECEIVER_EMAIL, "No Vehicle Details Found",
+                       "Dear Team,\n\nNo vehicle details were found with the specified criteria.\n\nBest regards,\nYour Team")
+            return jsonify({"error": "No vehicle details found"}), 404
+
+        vehicles_info = [vehicle.serialize_to_dict() for vehicle in vehicles]
+
+        # Generate the email body
+        email_subject = "Vehicle Details Retrieved"
+        email_body = generate_vehicle_details_email_body(
+            vehicles_info=vehicles_info,
+            total_count=total_count
+        )
+        send_email(RECEIVER_EMAIL, email_subject, email_body)
+
+        log_info("Vehicle details retrieved successfully.")
+        return jsonify({
+            "total_count": total_count,
+            "vehicles": vehicles_info
+        })
+
+    except SQLAlchemyError as e:
+        # Log database errors and notify via email
+        error_message = f"Database error occurred: {str(e)}"
+        log_error(error_message)
+        send_email(RECEIVER_EMAIL, "Database Error",
+                   f"Dear Team,\n\nAn error occurred while accessing the database.\n\nError Details:\n{error_message}\n\nBest regards,\nYour Team")
+        return jsonify({"error": "Internal server error", "details": str(e)}), 500
+
+    except Exception as e:
+        # Log unexpected errors and notify via email
+        error_message = f"Unexpected error occurred: {str(e)}"
+        log_error(error_message)
+        send_email(RECEIVER_EMAIL, "Unexpected Error",
+                   f"Dear Team,\n\nAn unexpected error occurred.\n\nError Details:\n{error_message}\n\nBest regards,\nYour Team")
+        return jsonify({"error": "Internal server error", "details": str(e)}), 500
+
+    finally:
+        log_info("End of search_vehicles function")
+
+
+@app.route('/update-vehicle-details', methods=['PUT'])
+def update_vehicle_details():
+    """
+    Updates the details of a specific vehicle.
+
+    JSON Body:
+    - vehicle_model_id (str): The unique ID of the vehicle to be updated.
+    - vehicle_model (str): New vehicle model name.
+    - vehicle_year (int): New vehicle year.
+    - engine_type (str): New engine type.
+    - transmission (str): New transmission type.
+    - fuel_type (str): New fuel type.
+    - body_type (str): New body type.
+    - warranty_period_years (int): New warranty period in years.
+
+    :return: JSON response with updated vehicle details or an error message.
+    """
+    data = request.get_json()
+
+    vehicle_model_id = data.get('vehicle_model_id')
+    if not vehicle_model_id:
+        log_error("Vehicle model ID is missing from the request body.")
+        return jsonify({"error": "Vehicle model ID is required"}), 400
+
+    log_info(f"Request to update vehicle details received for vehicle_model_id={vehicle_model_id}")
+
+    vehicle = session.query(VehicleDetails).get(vehicle_model_id)
+    if vehicle is None:
+        log_error(f"Vehicle with ID {vehicle_model_id} not found.")
+        send_email(
+            RECEIVER_EMAIL,
+            "Vehicle Not Found",
+            f"Dear Team,\n\nVehicle with ID {vehicle_model_id} could not be found in the database.\nPlease check and verify the details.\n\nBest regards,\nYour Team"
+        )
+        return jsonify({"error": "Vehicle not found"}), 404
+
+    try:
+        # Log the initial state of the vehicle
+        log_info(f"Original vehicle data: {vehicle.serialize_to_dict()}")
+
+        # Update fields with new values, or retain current values if not provided
+        vehicle.vehicle_model = data.get('vehicle_model', vehicle.vehicle_model)
+        vehicle.vehicle_year = data.get('vehicle_year', vehicle.vehicle_year)
+        vehicle.engine_type = data.get('engine_type', vehicle.engine_type)
+        vehicle.transmission = data.get('transmission', vehicle.transmission)
+        vehicle.fuel_type = data.get('fuel_type', vehicle.fuel_type)
+        vehicle.body_type = data.get('body_type', vehicle.body_type)
+        vehicle.warranty_period_years = data.get('warranty_period_years', vehicle.warranty_period_years)
+
+        # Commit the changes to the database
+        session.commit()
+
+        # Serialize updated vehicle data
+        updated_vehicle_info = vehicle.serialize_to_dict()
+
+        # Log the updated data
+        log_info(f"Vehicle with ID {vehicle_model_id} successfully updated.")
+        log_info(f"Updated vehicle data: {updated_vehicle_info}")
+
+        # Generate a detailed email format for the updated vehicle details
+        email_subject = "Vehicle Details Updated"
+        email_body = generate_detailed_vehicle_email(
+            vehicle_info=updated_vehicle_info,
+            action="Update",
+            admin_email=RECEIVER_EMAIL
+        )
+
+        # Send the email with updated details
+        send_email(RECEIVER_EMAIL, email_subject, email_body)
+
+        # Return the updated vehicle details in a neat format
+        return jsonify({
+            "message": "Vehicle details updated successfully.",
+            "updated_vehicle_details": updated_vehicle_info,
+            "vehicle_model_id": vehicle_model_id
+        }), 200
+
+    except SQLAlchemyError as e:
+        # Rollback the transaction in case of an error
+        session.rollback()
+
+        log_error(f"SQL error occurred while updating vehicle with ID {vehicle_model_id}: {str(e)}")
+        send_email(
+            RECEIVER_EMAIL,
+            "Database Error",
+            f"Dear Team,\n\nAn error occurred while updating the vehicle with ID {vehicle_model_id}.\nError Details:\n{str(e)}\n\nBest regards,\nYour Team"
+        )
+        return jsonify({"error": "Database error", "details": str(e)}), 500
+
+    except Exception as e:
+        # Handle unexpected errors
+        log_error(f"Unexpected error occurred while updating vehicle with ID {vehicle_model_id}: {str(e)}")
+        send_email(
+            RECEIVER_EMAIL,
+            "Unexpected Error",
+            f"Dear Team,\n\nAn unexpected error occurred while updating the vehicle with ID {vehicle_model_id}.\nError Details:\n{str(e)}\n\nBest regards,\nYour Team"
+        )
+        return jsonify({"error": "Internal server error", "details": str(e)}), 500
+
+    finally:
+        log_info(f"End of update_vehicle_details function for vehicle_model_id={vehicle_model_id}")
+
+
+@app.route('/delete-vehicles', methods=['DELETE'])
+def delete_vehicles():
+    """
+    Deletes vehicle details based on provided query parameters.
+    Parameters can include vehicle_model_id, vehicle_model, vehicle_year, and other optional fields.
+
+    Query Parameters:
+    - vehicle_model_id (str): The unique ID of the vehicle.
+    - vehicle_model (str): The vehicle model name.
+    - vehicle_year (int): The vehicle year.
+    - engine_type (str): The engine type of the vehicle.
+    - transmission (str): The transmission type of the vehicle.
+    - fuel_type (str): The fuel type of the vehicle.
+    - body_type (str): The body type of the vehicle.
+    - warranty_period_years (int): The warranty period in years.
+    - color (str): The color of the vehicle.
+    - model_variant (str): The model variant (e.g., Top, Mid, Base).
+    - tyre_company (str): The company of the tyre.
+    - tyre_size (str): The size of the tyre.
+    - start_type (str): The start type (e.g., Key, Push Start).
+    - sunroof_available (bool): Whether the sunroof is available.
+    - gear_type (str): The gear type (e.g., Gear, Gearless).
+    - vehicle_type (str): The type of vehicle (e.g., SUV, Sedan, Hatchback).
+
+    :return: JSON response with the number of vehicles deleted or error details.
+    """
+    log_info("Received request to delete vehicles with specified criteria.")
+
+    # Extract query parameters
+    criteria = {
+        'vehicle_model': request.args.get('vehicle_model'),
+        'vehicle_year': request.args.get('vehicle_year', type=int),
+        'engine_type': request.args.get('engine_type'),
+        'transmission': request.args.get('transmission'),
+        'fuel_type': request.args.get('fuel_type'),
+        'body_type': request.args.get('body_type'),
+        'warranty_period_years': request.args.get('warranty_period_years', type=int),
+        'color': request.args.get('color'),
+        'model_variant': request.args.get('model_variant'),
+        'tyre_company': request.args.get('tyre_company'),
+        'tyre_size': request.args.get('tyre_size'),
+        'start_type': request.args.get('start_type'),
+        'sunroof_available': request.args.get('sunroof_available', type=bool),
+        'gear_type': request.args.get('gear_type'),
+        'vehicle_type': request.args.get('vehicle_type')
+    }
+
+    try:
+        # Build query based on provided parameters
+        query = session.query(VehicleDetails)
+        for key, value in criteria.items():
+            if value is not None:
+                query = query.filter(getattr(VehicleDetails, key) == value)
+
+        # Retrieve all vehicles that match the criteria
+        vehicles_to_delete = query.all()
+
+        # If no vehicles are found, return a message
+        if not vehicles_to_delete:
+            log_info("No vehicles found matching the criteria.")
+            send_deletion_email(RECEIVER_EMAIL, 0, criteria, [])
+            return jsonify({"message": "No vehicles found matching the criteria"}), 404
+
+        # Delete the vehicles
+        for vehicle in vehicles_to_delete:
+            session.delete(vehicle)
+        session.commit()
+
+        # Log and notify about successful deletion
+        num_deleted = len(vehicles_to_delete)
+        log_info(f"{num_deleted} vehicles deleted successfully based on the provided criteria.")
+
+        # Prepare detailed email content
+        send_deletion_email(RECEIVER_EMAIL, num_deleted, criteria,
+                            [vehicle.serialize_to_dict() for vehicle in vehicles_to_delete])
+
+        # Return success message with the number of vehicles deleted and details
+        return jsonify({
+            "message": "Vehicle details deleted successfully.",
+            "num_deleted": num_deleted,
+            "deleted_vehicles": [vehicle.serialize_to_dict() for vehicle in vehicles_to_delete]
+        }), 200
+
+    except SQLAlchemyError as e:
+        session.rollback()  # Rollback in case of error
+
+        # Log and notify about the error
+        log_error(f"Database error occurred while deleting vehicles: {str(e)}")
+        send_deletion_email(RECEIVER_EMAIL, 0, criteria, [])
+
+        return jsonify({"error": "Internal server error", "details": str(e)}), 500
+
+    except Exception as e:
+        # Handle any unexpected exceptions
+        log_error(f"Unexpected error occurred while deleting vehicles: {str(e)}")
+        send_deletion_email(RECEIVER_EMAIL, 0, criteria, [])
+
+        return jsonify({"error": "Internal server error", "details": str(e)}), 500
+
+    finally:
+        log_info("End of delete_vehicles function.")
 
 
 if __name__ == "__main__":
