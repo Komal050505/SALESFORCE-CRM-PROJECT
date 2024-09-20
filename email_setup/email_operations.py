@@ -15,7 +15,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import List, Dict, Optional
 
-
 # Application-specific imports from our application(for email configuration details)
 from email_setup.email_config import (
     RECEIVER_EMAIL,
@@ -435,3 +434,207 @@ def send_deletion_email(
 
     except Exception as e:
         log_error(f"Failed to send email to {', '.join(to_email)}. Error: {str(e)}")
+
+
+# Function to generate user email
+def generate_user_vehicle_purchase_email(
+        vehicle_info: Dict[str, str],
+        tax_amount: float,
+        insurance_info: Dict[str, str],
+        next_service_info: Dict[str, str],
+        free_services_left: int
+) -> str:
+    """
+    Generates the email content to notify the user of a successful vehicle purchase.
+    Includes vehicle details, insurance, free services left, tax amount, and next service information.
+
+    :param vehicle_info: Dictionary with vehicle details.
+    :param tax_amount: Calculated tax amount for the vehicle.
+    :param insurance_info: Dictionary containing insurance details.
+    :param next_service_info: Dictionary with next service details.
+    :param free_services_left: Number of free services left.
+    :return: A string representing the email body.
+    """
+    return f"""
+    Hello,
+
+    Congratulations on your new vehicle purchase!
+
+    Below are the details of your purchase:
+
+    **Vehicle Details**:
+    - Vehicle Model: {vehicle_info.get('vehicle_model', 'N/A')}
+    - Vehicle Year: {vehicle_info.get('vehicle_year', 'N/A')}
+    - Vehicle Color: {vehicle_info.get('vehicle_color', 'N/A')}
+    - Current Kilometers: {vehicle_info.get('current_kilometers', 'N/A')}
+    - Transmission: {vehicle_info.get('transmission', 'N/A')}
+    - Engine Type: {vehicle_info.get('engine_type', 'N/A')}
+    - Fuel Type: {vehicle_info.get('fuel_type', 'N/A')}
+    - Body Type: {vehicle_info.get('body_type', 'N/A')}
+    - Warranty Period: {vehicle_info.get('warranty_period_years', 'N/A')} years
+
+    **Insurance Information**:
+    - Policy Number: {insurance_info.get('policy_number', 'N/A')}
+    - Provider: {insurance_info.get('provider', 'N/A')}
+    - Expiry Date: {insurance_info.get('expiry_date', 'N/A')}
+
+    **Tax Information**:
+    - Tax Amount: ₹{tax_amount}
+
+    **Free Services**:
+    You have {free_services_left} free services left.
+
+    **Next Service**:
+    - Service Type: {next_service_info.get('service_type', 'N/A')}
+    - Due Date: {next_service_info.get('due_date', 'N/A')}
+    - Kilometers Due: {next_service_info.get('kilometers_due', 'N/A')}
+
+    Thank you for choosing us. We look forward to serving you!
+
+    Best regards,
+    Your Vehicle Service Team
+    """
+
+
+# Function to generate team email
+def generate_team_vehicle_purchase_email(
+        vehicle_info: Dict[str, str],
+        opportunity_info: Dict[str, str],
+        tax_amount: float,
+        next_service_info: Dict[str, str],
+        free_services_left: int
+) -> str:
+    """
+    Generates the email content to notify the internal team of a successful vehicle purchase.
+    Includes all detailed vehicle information for reference and record-keeping.
+
+    :param vehicle_info: Dictionary with vehicle details.
+    :param opportunity_info: Dictionary with opportunity details.
+    :param tax_amount: Calculated tax amount for the vehicle.
+    :param next_service_info: Dictionary with next service details.
+    :param free_services_left: Number of free services left.
+    :return: A string representing the email body.
+    """
+    return f"""
+    Team,
+
+    A new vehicle purchase has been successfully recorded. Below are the details:
+
+    **Vehicle Details**:
+    - Vehicle Model ID: {vehicle_info.get('vehicle_model_id', 'N/A')}
+    - Vehicle Model: {vehicle_info.get('vehicle_model', 'N/A')}
+    - Vehicle Year: {vehicle_info.get('vehicle_year', 'N/A')}
+    - Engine Type: {vehicle_info.get('engine_type', 'N/A')}
+    - Transmission: {vehicle_info.get('transmission', 'N/A')}
+    - Fuel Type: {vehicle_info.get('fuel_type', 'N/A')}
+    - Body Type: {vehicle_info.get('body_type', 'N/A')}
+    - Warranty Period: {vehicle_info.get('warranty_period_years', 'N/A')} years
+    - Color: {vehicle_info.get('vehicle_color', 'N/A')}
+    - Current Kilometers: {vehicle_info.get('current_kilometers', 'N/A')}
+    - Gear Type: {vehicle_info.get('gear_type', 'N/A')}
+
+    **Opportunity Details**:
+    - Opportunity ID: {opportunity_info.get('opportunity_id', 'N/A')}
+    - Opportunity Stage: {opportunity_info.get('stage', 'N/A')}
+
+    **Tax Information**:
+    - Tax Amount: ₹{tax_amount}
+
+    **Free Services**:
+    This vehicle has {free_services_left} free services remaining.
+
+    **Next Service**:
+    - Service Type: {next_service_info.get('service_type', 'N/A')}
+    - Due Date: {next_service_info.get('due_date', 'N/A')}
+    - Kilometers Due: {next_service_info.get('kilometers_due', 'N/A')}
+
+    Please ensure all records are updated accordingly.
+
+    Best regards,
+    Vehicle Management System
+    """
+
+
+def send_vehicle_details_email(vehicle_info, opportunity_info, tax_amount, next_service_info, free_services_left):
+    """
+    Sends a detailed email regarding a vehicle purchase to the internal team.
+
+    :param vehicle_info: Dictionary containing vehicle details.
+    :param opportunity_info: Dictionary containing opportunity details.
+    :param tax_amount: The calculated tax amount for the vehicle.
+    :param next_service_info: Dictionary with next service details.
+    :param free_services_left: Number of free services left.
+    """
+    subject = "New Vehicle Purchase Notification"
+    email_body = generate_team_vehicle_purchase_email(
+        vehicle_info,
+        opportunity_info,
+        tax_amount,
+        next_service_info,
+        free_services_left
+    )
+
+    # Send the email to the internal team
+    send_email([RECEIVER_EMAIL], subject, email_body)
+
+
+def generate_success_email(purchased_vehicles_list):
+    """
+    Generate an email body for successful vehicle retrieval.
+    """
+    total_count = len(purchased_vehicles_list)
+    email_body = f"Successfully retrieved {total_count} purchased vehicle(s):\n\n"
+
+    for vehicle in purchased_vehicles_list:
+        email_body += f"Vehicle ID: {vehicle['vehicle_id']}\n"
+        email_body += f"Opportunity ID: {vehicle['opportunity_id']}\n"
+        email_body += f"Purchase Date: {vehicle['purchase_date']}\n"
+        email_body += f"Vehicle Model: {vehicle['vehicle_model']}\n"
+        email_body += f"Vehicle Color: {vehicle['vehicle_color']}\n"
+        email_body += f"Current Kilometers: {vehicle['current_kilometers']}\n"
+        email_body += "---------------------------------\n"
+
+    email_body += f"Total Count: {total_count}\n"
+    return email_body
+
+
+def generate_error_email(error_message):
+    """
+    Generate an email body for errors encountered.
+    """
+    return f"An error occurred while retrieving purchased vehicle details:\n\n{error_message}"
+
+
+def notify_vehicle_update_success(subject, details, updated_fields):
+    """
+    Sends a formatted success notification email for vehicle updates.
+    :param subject: Subject of the email.
+    :param details: Dictionary containing the details of the updated vehicle.
+    :param updated_fields: Dictionary containing the fields that were updated.
+    """
+    vehicle_id = details.get("vehicle_id")
+
+    # Build the email content (email body)
+    email_content = f"Dear Team,\n\nThe vehicle has been successfully updated with the following details:\n"
+    email_content += "********************************************\n"
+    email_content += f"Vehicle ID: {vehicle_id}\n\nUpdated Fields:\n"
+
+    index = 1
+    if "vehicle_color" in updated_fields:
+        email_content += f"{index}. Vehicle Color: {updated_fields['vehicle_color']}\n"
+        index += 1
+    if "current_kilometers" in updated_fields:
+        email_content += f"{index}. Current Kilometers: {updated_fields['current_kilometers']}\n"
+        index += 1
+    if "services" in updated_fields:
+        email_content += f"{index}. Services Updated: {', '.join(updated_fields['services'])}\n"
+        index += 1
+    if "taxes" in updated_fields:
+        email_content += f"{index}. Taxes Updated: {', '.join(updated_fields['taxes'])}\n"
+        index += 1
+
+    email_content += "********************************************\n"
+    email_content += "\nRegards,\nVehicle Management Team"
+
+    # Send the email with the correct recipient list
+    send_email(['RECEIVER_EMAIL@example.com'], subject, email_content)

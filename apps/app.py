@@ -8,7 +8,7 @@ from datetime import datetime  # For date and time manipulations
 
 # Third-Party/External Library Imports
 import pytz  # For timezone handling and conversions
-from flask import Flask, request, jsonify, abort  # For building web applications and handling requests/responses
+from flask import Flask, request, jsonify  # For building web applications and handling requests/responses
 from sqlalchemy.exc import SQLAlchemyError  # For handling SQLAlchemy database exceptions
 
 # # # Project-Specific Imports ********
@@ -21,20 +21,23 @@ from email_setup.email_operations import (  # Email notifications
     notify_success,
     notify_failure,
     notify_opportunity_details,
-    notify_opportunity_update_success, notify_warning, format_vehicle_details, send_email,
-    generate_vehicle_details_email_body, generate_detailed_vehicle_email, send_deletion_email
+    notify_opportunity_update_success, format_vehicle_details, send_email,
+    generate_vehicle_details_email_body, generate_detailed_vehicle_email, send_deletion_email,
+    generate_user_vehicle_purchase_email, generate_team_vehicle_purchase_email,
+    generate_error_email, generate_success_email, notify_vehicle_update_success
 )
 
 # Logging Utility
 from logging_package.logging_utility import (  # Logging information, errors, and debugging
     log_info,
     log_error,
-    log_debug, log_warning
+    log_debug
 )
 
 # User Models
 from user_models.tables import Account, Dealer, Opportunity, \
-    VehicleDetails  # Database models for account, dealer, and opportunity
+    VehicleDetails, PurchasedVehicles, Insurance, \
+    VehicleServices, Taxes  # Database models for account, dealer, and opportunity
 
 # Utility Functions
 from utilities.reusables import (  # Reusable utility functions for validations and conversions
@@ -43,7 +46,7 @@ from utilities.reusables import (  # Reusable utility functions for validations 
     validate_stage,
     validate_probability,
     parse_date,
-    validate_positive_number
+    validate_positive_number, schedule_next_service, calculate_taxes
 )
 
 # Create Flask app instance
@@ -697,7 +700,6 @@ def create_new_customer():
         payload.update({'created_date': created_date, 'opportunity_id': opportunity_id})
         log_info(f"Payload after adding created_date and opportunity_id: {payload}")
 
-        account_id = payload.get("account_id")
         account_name = payload.get("account_name")
         account = session.query(Account).filter_by(account_name=account_name).first()
 
@@ -730,22 +732,9 @@ def create_new_customer():
         ).first()
 
         if not dealer:
-            # Dealer does not exist, add new dealer
-            new_dealer = Dealer(
-                dealer_id=dealer_id,
-                dealer_code=dealer_code,
-                opportunity_owner=opportunity_owner
-            )
-            session.add(new_dealer)
-            session.commit()
-            log_info(f"New dealer added: {dealer_id}, {dealer_code}, {opportunity_owner}")
+            log_info(
+                f"Dealer with ID {dealer_id} not found, but no need to create new dealer. Proceeding with existing dealers.")
 
-            # Notify user about the new dealer addition
-            dealer_creation_message = (f"New dealer added to the database:\n"
-                                       f"Dealer ID: {dealer_id}\n"
-                                       f"Dealer Code: {dealer_code}\n"
-                                       f"Opportunity Owner: {opportunity_owner}")
-            notify_success("New Dealer Added", dealer_creation_message)
         else:
             log_info(f"Dealer found: {dealer_id}, {dealer_code}, {opportunity_owner}")
 
@@ -1771,6 +1760,282 @@ def delete_vehicles():
 
     finally:
         log_info("End of delete_vehicles function.")
+
+
+# --------------------------------------------- PURCHASED VEHICLES TABLE -----------------------------------------------
+
+
+@app.route('/vehicle-purchase', methods=["POST"])
+def handle_vehicle_purchase():
+    """
+    API to handle the purchase of a vehicle. It adds the vehicle purchase record, assigns the first 3 free services,
+    and schedules the next service based on kilometers or date.
+    """
+    log_info("Received request to handle vehicle purchase")
+    try:
+        payload = request.get_json()
+        log_debug(f"Request payload: {payload}")
+
+        opportunity_id = payload.get("opportunity_id")
+        log_info(f"Opportunity ID: {opportunity_id}")
+
+        # Fetch the opportunity from the database
+        opportunity = session.query(Opportunity).filter_by(opportunity_id=opportunity_id).first()
+
+        if not opportunity:
+            error_message = f"Opportunity not found for ID: {opportunity_id}"
+            log_error(error_message)
+            return jsonify({"error": error_message}), 404
+
+        # Check if the opportunity indicates a completed vehicle purchase
+        if opportunity.probability != 100:
+            error_message = f"Vehicle not purchased yet, probability is {opportunity.probability}%"
+            log_info(error_message)
+            return jsonify({"message": "Vehicle purchase not confirmed"}), 400
+
+        # Record the new vehicle purchase
+        new_purchase = PurchasedVehicles(
+            opportunity_id=opportunity_id,
+            vehicle_model_id=opportunity.vehicle_model_id,
+            vehicle_color=opportunity.vehicle_color,
+            current_kilometers=0
+        )
+        session.add(new_purchase)
+        session.commit()
+        log_info(f"New vehicle purchase recorded: {new_purchase.vehicle_id}")
+
+        # Assign the first 3 free services to the vehicle
+        new_purchase.add_free_services(session)
+        session.commit()
+        log_info(f"First three free services added for vehicle {new_purchase.vehicle_id}")
+
+        # Calculate and record the tax amount
+        tax_amount = opportunity.amount * 0.05
+        tax_record = calculate_taxes(new_purchase.vehicle_id, tax_amount)
+        session.add(tax_record)
+        session.commit()
+        log_info(f"Tax record added for vehicle {new_purchase.vehicle_id}")
+
+        # Prepare vehicle info for emails
+        vehicle_info = new_purchase.serialize_to_dict()  # Serialize vehicle details
+        next_service_info = schedule_next_service(new_purchase)  # Schedule next service
+        free_services_left = 3  # Assuming 3 free services initially assigned
+
+        # User email content preparation
+        insurance_info = {"insurance_policy": "Policy XYZ"}  # Placeholder for insurance details
+        user_email_body = generate_user_vehicle_purchase_email(
+            vehicle_info, tax_amount, insurance_info, next_service_info, free_services_left
+        )
+        notify_success("Vehicle Purchase Confirmation", user_email_body)
+
+        # Team email content preparation
+        opportunity_info = opportunity.serialize_to_dict()  # Serialize opportunity details
+        team_email_body = generate_team_vehicle_purchase_email(
+            vehicle_info, opportunity_info, tax_amount, next_service_info, free_services_left
+        )
+        notify_success("New Vehicle Purchase - Internal Notification", team_email_body)
+
+        # Return success message with details for response
+        purchase_message = (f"Vehicle purchase registered successfully.\n\n"
+                            f"Opportunity ID: {opportunity_id}\n"
+                            f"Vehicle Model: {opportunity.vehicle_model}\n"
+                            f"Vehicle Color: {opportunity.vehicle_color}\n"
+                            f"First three free services have been added.\n"
+                            f"Tax Amount: {tax_amount}")
+        log_info(purchase_message)
+
+        return jsonify({
+            "message": "Vehicle purchased and services scheduled successfully",
+            "purchase_details": vehicle_info,
+            "next_service": next_service_info
+        }), 201
+
+    except SQLAlchemyError as e:
+        session.rollback()
+        error_message = f"Error in processing vehicle purchase: {str(e)}"
+        log_error(error_message)
+        return jsonify({"error": "Internal server error", "details": error_message}), 500
+
+    except Exception as e:
+        session.rollback()
+        error_message = f"Error in processing vehicle purchase: {str(e)}"
+        log_error(error_message)
+        return jsonify({"error": "Internal server error", "details": error_message}), 500
+
+    finally:
+        session.close()
+        log_info("End of handle_vehicle_purchase function")
+
+
+@app.route('/purchased-vehicles', methods=["GET"])
+def get_purchased_vehicles():
+    log_info("Received request to get purchased vehicle details")
+    log_info(f"Processing query parameters: {request.args}")
+
+    try:
+        # Get query parameters for filtering
+        vehicle_id = request.args.get('vehicle_id')
+        opportunity_id = request.args.get('opportunity_id')
+
+        log_info(f"Filters applied: Vehicle ID: {vehicle_id}, Opportunity ID: {opportunity_id}")
+
+        # Start the query for purchased vehicles
+        query = session.query(PurchasedVehicles)
+
+        # Apply filters if provided
+        if vehicle_id:
+            log_info(f"Applying filter: vehicle_id = {vehicle_id}")
+            query = query.filter(PurchasedVehicles.vehicle_id == vehicle_id)
+
+        if opportunity_id:
+            log_info(f"Applying filter: opportunity_id = {opportunity_id}")
+            query = query.filter(PurchasedVehicles.opportunity_id == opportunity_id)
+
+        purchased_vehicles = query.all()
+        log_info(f"Retrieved {len(purchased_vehicles)} purchased vehicles from the database")
+
+        # Prepare vehicle list for response
+        purchased_vehicles_list = [vehicle.serialize_to_dict() for vehicle in purchased_vehicles]
+
+        # Prepare the result response
+        result = {
+            "total_purchased_vehicles": len(purchased_vehicles_list),
+            "purchased_vehicles": purchased_vehicles_list,
+        }
+
+        # Email notification for successful retrieval
+        if purchased_vehicles_list:
+            email_body = generate_success_email(purchased_vehicles_list)
+            send_email(RECEIVER_EMAIL, "Purchased Vehicle Details Retrieved", email_body)
+            log_info(f"Sent email notification for {len(purchased_vehicles_list)} purchased vehicles")
+
+        return jsonify(result), 200
+
+    except SQLAlchemyError as e:
+        error_message = f"Error retrieving purchased vehicles: {str(e)}"
+        log_error(error_message)
+
+        # Email notification for error
+        error_email_body = generate_error_email(error_message)
+        send_email(RECEIVER_EMAIL, "Error Retrieving Purchased Vehicles", error_email_body)
+
+        return jsonify({"error": "Internal server error", "details": error_message}), 500
+
+    except Exception as e:
+        error_message = f"Unexpected error occurred: {str(e)}"
+        log_error(error_message)
+
+        # Email notification for unexpected error
+        unexpected_error_email_body = generate_error_email(error_message)
+        send_email(RECEIVER_EMAIL, "Unexpected Error Retrieving Purchased Vehicles",
+                   unexpected_error_email_body)
+
+        return jsonify({"error": "Internal server error", "details": error_message}), 500
+
+    finally:
+        session.close()
+        log_info("End of get_purchased_vehicles function")
+
+
+@app.route('/update-purchased-vehicle', methods=["PUT"])
+def update_purchased_vehicle():
+    """
+    API to update the details of a purchased vehicle.
+    """
+    vehicle_id = request.args.get('vehicle_id')  # Ensure you get the vehicle ID from the request
+    log_info(f"Received request to update vehicle with ID: {vehicle_id}")
+
+    try:
+        # Get the payload from the request
+        payload = request.get_json()
+        log_debug(f"Request payload: {payload}")
+
+        # Fetch the existing vehicle record
+        vehicle = session.query(PurchasedVehicles).filter_by(vehicle_id=vehicle_id).first()
+
+        if not vehicle:
+            error_message = f"Vehicle not found for ID: {vehicle_id}"
+            log_error(error_message)
+            return jsonify({"error": error_message}), 404
+
+        updated_fields = {}
+
+        if 'vehicle_color' in payload:
+            updated_fields['vehicle_color'] = payload['vehicle_color']
+            vehicle.vehicle_color = payload['vehicle_color']
+            log_info(f"Updated vehicle color to: {vehicle.vehicle_color}")
+
+        if 'current_kilometers' in payload:
+            updated_fields['current_kilometers'] = payload['current_kilometers']
+            vehicle.current_kilometers = payload['current_kilometers']
+            log_info(f"Updated current kilometers to: {vehicle.current_kilometers}")
+
+        # Update services if provided
+        if 'services' in payload:
+            for service_data in payload['services']:
+                service_id = service_data.get('service_id')
+                if service_id:
+                    service = session.query(VehicleServices).filter_by(id=service_id, vehicle_id=vehicle_id).first()
+                    if service:
+                        updated_fields['services'] = updated_fields.get('services', [])
+                        updated_fields['services'].append(service_id)
+                        service.service_type = service_data.get('service_type', service.service_type)
+                        service.kilometers_at_service = service_data.get('kilometers_at_service', service.kilometers_at_service)
+                        service.description = service_data.get('description', service.description)
+                        log_info(f"Updated service ID {service_id}")
+
+        # Update taxes if provided
+        if 'taxes' in payload:
+            for tax_data in payload['taxes']:
+                tax_id = tax_data.get('tax_id')
+                if tax_id:
+                    tax = session.query(Taxes).filter_by(tax_id=tax_id, vehicle_id=vehicle_id).first()
+                    if tax:
+                        updated_fields['taxes'] = updated_fields.get('taxes', [])
+                        updated_fields['taxes'].append(tax_id)
+                        tax.tax_amount = tax_data.get('tax_amount', tax.tax_amount)
+                        tax.tax_type = tax_data.get('tax_type', tax.tax_type)
+                        tax.due_date = tax_data.get('due_date', tax.due_date)
+                        log_info(f"Updated tax ID {tax_id}")
+
+        session.commit()
+        log_info(f"Vehicle with ID {vehicle_id} updated successfully")
+
+        # Prepare response
+        response = vehicle.serialize_to_dict()
+        # Send email notification
+        notify_vehicle_update_success("Vehicle Update Notification", response, updated_fields)
+
+        return jsonify({
+            "message": "Vehicle updated successfully",
+            "updated_vehicle": response
+        }), 200
+
+    except SQLAlchemyError as e:
+        session.rollback()
+        error_message = f"Error updating vehicle: {str(e)}"
+        log_error(error_message)
+
+        # Send failure email notification
+        failure_email_body = generate_failure_email(error_message)
+        send_email(RECEIVER_EMAIL, "Error Updating Vehicle", failure_email_body)
+
+        return jsonify({"error": "Internal server error", "details": error_message}), 500
+
+    except Exception as e:
+        session.rollback()
+        error_message = f"Unexpected error occurred: {str(e)}"
+        log_error(error_message)
+
+        # Send unexpected error email notification
+        unexpected_error_email_body = generate_failure_email(error_message)
+        send_email(RECEIVER_EMAIL, "Unexpected Error Updating Vehicle", unexpected_error_email_body)
+
+        return jsonify({"error": "Internal server error", "details": error_message}), 500
+
+    finally:
+        session.close()
+        log_info("End of update_purchased_vehicle function")
 
 
 if __name__ == "__main__":

@@ -189,6 +189,7 @@ class VehicleDetails(Base):
             'vehicle_type': self.vehicle_type
         }
 
+
 # ------------------------------------------ Purchased Vehicles Table ---------------------------------------------------------
 
 
@@ -236,6 +237,7 @@ class PurchasedVehicles(Base):
             'vehicle_id': self.vehicle_id,
             'opportunity_id': self.opportunity_id,
             'purchase_date': self.purchase_date.strftime("%I:%M %p, %B %d, %Y"),
+            'vehicle_model_id': self.vehicle_model_id,
             'vehicle_model': self.vehicle_details.vehicle_model if self.vehicle_details else None,
             'vehicle_year': self.vehicle_details.vehicle_year if self.vehicle_details else None,
             'vehicle_color': self.vehicle_color,
@@ -243,6 +245,20 @@ class PurchasedVehicles(Base):
             'services': [service.serialize_to_dict() for service in self.services],
             'insurance': self.insurance.serialize_to_dict() if self.insurance else None
         }
+
+
+# ------------------------------------------ Taxes Table ---------------------------------------------------------------
+class Taxes(Base):
+    __tablename__ = 'taxes'
+
+    tax_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    vehicle_id = Column(String, ForeignKey('purchased_vehicles.vehicle_id'), nullable=False)
+    tax_amount = Column(Float, nullable=False)
+    tax_type = Column(String, nullable=False)
+    due_date = Column(DateTime, nullable=False)
+
+    # Relationship with PurchasedVehicles
+    purchased_vehicle = relationship("PurchasedVehicles", backref="taxes")
 
 
 # ------------------------------------------ Vehicle Services Table ----------------------------------------------------
@@ -307,141 +323,4 @@ class Insurance(Base):
         }
 
 
-'''
-class PurchasedVehicles(Base):
-    __tablename__ = 'purchased_vehicles'
 
-    vehicle_id = Column("vehicle_id", String, primary_key=True, default=lambda: str(uuid.uuid1()))
-    opportunity_id = Column("opportunity_id", String, ForeignKey('opportunity.opportunity_id'), nullable=False)
-    purchase_date = Column("purchase_date", DateTime, nullable=False,
-                           default=lambda: datetime.now(pytz.timezone('Asia/Kolkata')))
-    vehicle_model = Column("vehicle_model", String, nullable=False)
-    vehicle_year = Column("vehicle_year", Integer, nullable=False)
-    vehicle_color = Column("vehicle_color", String, nullable=False)
-    current_kilometers = Column("current_kilometers", Float, nullable=False)
-
-    # Relationship to the Opportunity table
-    opportunity = relationship("Opportunity", backref="purchased_vehicles")
-
-    # Relationship to VehicleServices table
-    services = relationship("VehicleServices", backref="purchased_vehicle", cascade="all, delete-orphan")
-
-    def add_free_services(self, session):
-        """
-        Add first three free services upon vehicle purchase.
-        """
-        free_service_types = ["First Free Service", "Second Free Service", "Third Free Service"]
-        kilometers_at_service = [1000, 5000, 10000]  # Set service intervals (in kilometers)
-
-        for index, service_type in enumerate(free_service_types):
-            new_service = VehicleServices(
-                vehicle_id=self.vehicle_id,
-                service_type=service_type,
-                kilometers_at_service=kilometers_at_service[index],
-                description=f"{service_type} up to {kilometers_at_service[index]} kilometers."
-            )
-            session.add(new_service)
-
-    def serialize_to_dict(self):
-        """
-        Serialize the purchased vehicle to a dictionary, including services.
-        :return: dict
-        """
-        return {
-            'vehicle_id': self.vehicle_id,
-            'opportunity_id': self.opportunity_id,
-            'purchase_date': self.purchase_date.strftime("%I:%M %p, %B %d, %Y"),
-            'vehicle_model': self.vehicle_model,
-            'vehicle_year': self.vehicle_year,
-            'vehicle_color': self.vehicle_color,
-            'current_kilometers': self.current_kilometers,
-            'services': [service.serialize_to_dict() for service in self.services]  # Include related services
-        }
-
-class VehicleDetails(Base):
-    __tablename__ = 'vehicle_details'
-
-    vehicle_model_id = Column("vehicle_model_id", String, primary_key=True, default=lambda: str(uuid.uuid1()))
-    vehicle_model = Column("vehicle_model", String, nullable=False)
-    vehicle_year = Column("vehicle_year", Integer, nullable=False)
-    engine_type = Column("engine_type", String, nullable=True)
-    transmission = Column("transmission", String, nullable=True)
-    fuel_type = Column("fuel_type", String, nullable=True)
-    body_type = Column("body_type", String, nullable=True)
-    warranty_period_years = Column("warranty_period_years", Integer, nullable=True)
-
-    def serialize_to_dict(self):
-        """
-        Serialize the vehicle details to a dictionary.
-        :return: dict
-        """
-        return {
-            'vehicle_model_id': self.vehicle_model_id,
-            'vehicle_model': self.vehicle_model,
-            'vehicle_year': self.vehicle_year,
-            'engine_type': self.engine_type,
-            'transmission': self.transmission,
-            'fuel_type': self.fuel_type,
-            'body_type': self.body_type,
-            'warranty_period_years': self.warranty_period_years
-        }
-
-class VehicleServices(Base):
-    __tablename__ = 'vehicle_services'
-
-    service_id = Column("service_id", String, primary_key=True, default=lambda: str(uuid.uuid1()))
-    vehicle_id = Column("vehicle_id", String, ForeignKey('purchased_vehicles.vehicle_id'), nullable=False)
-    service_date = Column("service_date", DateTime, nullable=False,
-                          default=lambda: datetime.now(pytz.timezone('Asia/Kolkata')))
-    service_type = Column("service_type", String,
-                          nullable=False)  # Type of service (e.g., Oil Change, Tire Replacement)
-    kilometers_at_service = Column("kilometers_at_service", Float)  # Kilometers reading at the time of service
-    description = Column("description", String)  # Additional details about the service
-
-    def serialize_to_dict(self):
-        """
-        Serialize the vehicle service to a dictionary.
-        :return: dict
-        """
-        return {
-            'service_id': self.service_id,
-            'vehicle_id': self.vehicle_id,
-            'service_date': self.service_date.strftime("%I:%M %p, %B %d, %Y"),
-            'service_type': self.service_type,
-            'kilometers_at_service': self.kilometers_at_service,
-            'description': self.description
-        }
-
-
-class Insurance(Base):
-    __tablename__ = 'insurance'
-
-    insurance_id = Column("insurance_id", String, primary_key=True, default=lambda: str(uuid.uuid1()))
-    vehicle_id = Column("vehicle_id", String, ForeignKey('purchased_vehicles.vehicle_id'), nullable=False)
-    insurance_company = Column("insurance_company", String, nullable=False)
-    policy_number = Column("policy_number", String, nullable=False, unique=True)
-    insurance_start_date = Column("insurance_start_date", DateTime, nullable=False)
-    insurance_expiry_date = Column("insurance_expiry_date", DateTime, nullable=False)
-    coverage_amount = Column("coverage_amount", Float, nullable=False)
-
-    # Relationship to PurchasedVehicles
-    purchased_vehicle = relationship("PurchasedVehicles", backref="insurances")
-
-    def serialize_to_dict(self):
-        """
-        Serialize the insurance record to a dictionary.
-        :return: dict
-        """
-        return {
-            'insurance_id': self.insurance_id,
-            'vehicle_id': self.vehicle_id,
-            'insurance_company': self.insurance_company,
-            'policy_number': self.policy_number,
-            'insurance_start_date': self.insurance_start_date.strftime("%B %d, %Y"),
-            'insurance_expiry_date': self.insurance_expiry_date.strftime("%B %d, %Y"),
-            'coverage_amount': self.coverage_amount
-        }
-
-
-
-'''

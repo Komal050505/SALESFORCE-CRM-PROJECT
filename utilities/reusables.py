@@ -6,7 +6,9 @@ This module contains all reusable functions that can be used based on requiremen
 import re
 
 # Date and time import
-from datetime import datetime
+from datetime import datetime, timedelta
+
+from user_models.tables import Taxes
 
 
 def get_opportunity_stage(probability):
@@ -123,3 +125,42 @@ def parse_date(date_str):
         return datetime.strptime(date_str, "%I:%M %p, %B %d, %Y")
     except ValueError:
         raise ValueError(f"Invalid date format: {date_str}. Expected format: '10:00 AM, September 30, 2024'")
+
+
+def schedule_next_service(purchase):
+    """
+    Schedule the next service for a purchased vehicle based on kilometers or date.
+    :param purchase: PurchasedVehicles instance
+    :return: dict containing next service details
+    """
+    # Assuming service intervals are after 5000 kilometers or 6 months
+    kilometers_interval = 5000
+    months_interval = 6
+    next_service_due_kilometers = purchase.current_kilometers + kilometers_interval
+    next_service_due_date = purchase.purchase_date + timedelta(days=months_interval * 30)
+
+    next_service_info = {
+        "service_type": "Regular Maintenance",
+        "due_date": next_service_due_date.strftime("%B %d, %Y"),
+        "kilometers_due": next_service_due_kilometers
+    }
+
+    return next_service_info
+
+
+def calculate_taxes(vehicle_id, tax_amount):
+    """
+    Create a tax record for a given vehicle.
+
+    :param vehicle_id: ID of the vehicle for which the tax is being calculated.
+    :param tax_amount: Amount of the tax.
+    :return: A Taxes instance representing the tax record.
+    """
+    # Create a tax record
+    tax_record = Taxes(
+        vehicle_id=vehicle_id,
+        tax_amount=tax_amount,
+        tax_type="Road Tax",  # Example type, this could be dynamic based on context
+        due_date=datetime.now() + timedelta(days=365)  # Example due date: 1 year from now
+    )
+    return tax_record

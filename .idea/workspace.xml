@@ -6,6 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="4c733cb6-ffa8-45c0-9d21-0a05f104ca5e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/main.log" beforeDir="false" afterPath="$PROJECT_DIR$/apps/main.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/email_setup/email_config.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_setup/email_config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/email_setup/email_operations.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_setup/email_operations.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user_models/tables.py" beforeDir="false" afterPath="$PROJECT_DIR$/user_models/tables.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utilities/reusables.py" beforeDir="false" afterPath="$PROJECT_DIR$/utilities/reusables.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,6 +40,7 @@
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;Python.app.executor&quot;: &quot;Run&quot;,
+    &quot;Python.email_config.executor&quot;: &quot;Run&quot;,
     &quot;Python.tables.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;
