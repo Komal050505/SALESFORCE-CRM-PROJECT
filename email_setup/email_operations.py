@@ -638,3 +638,30 @@ def notify_vehicle_update_success(subject, details, updated_fields):
 
     # Send the email with the correct recipient list
     send_email(['RECEIVER_EMAIL@example.com'], subject, email_content)
+
+
+def generate_failure_email(error_message, vehicle_id=None, payload=None, stage=None):
+    """
+    Generate a detailed email body for a failure scenario in plain text.
+    :param error_message: The error message to be included in the email.
+    :param vehicle_id: The vehicle ID for which the error occurred.
+    :param payload: The request payload that was being processed.
+    :param stage: The stage of the process where the error occurred.
+    :return: A formatted string for the email body.
+    """
+    email_body = []
+    email_body.append(f"Error Occurred: {error_message}")
+
+    if stage:
+        email_body.append(f"Stage: {stage}")
+
+    if vehicle_id:
+        email_body.append(f"Vehicle ID: {vehicle_id}")
+
+    if payload:
+        email_body.append("\nRequest Payload:")
+        for key, value in payload.items():
+            email_body.append(f"  {key}: {value}")
+
+    email_body.append("\nPlease review the error details and take necessary action.")
+    return "\n".join(email_body)

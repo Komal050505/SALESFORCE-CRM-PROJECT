@@ -24,7 +24,7 @@ from email_setup.email_operations import (  # Email notifications
     notify_opportunity_update_success, format_vehicle_details, send_email,
     generate_vehicle_details_email_body, generate_detailed_vehicle_email, send_deletion_email,
     generate_user_vehicle_purchase_email, generate_team_vehicle_purchase_email,
-    generate_error_email, generate_success_email, notify_vehicle_update_success
+    generate_error_email, generate_success_email, notify_vehicle_update_success, generate_failure_email
 )
 
 # Logging Utility
@@ -1945,6 +1945,8 @@ def update_purchased_vehicle():
     vehicle_id = request.args.get('vehicle_id')  # Ensure you get the vehicle ID from the request
     log_info(f"Received request to update vehicle with ID: {vehicle_id}")
 
+    payload = None  # Initialize payload to ensure it's always defined
+
     try:
         # Get the payload from the request
         payload = request.get_json()
@@ -1956,10 +1958,14 @@ def update_purchased_vehicle():
         if not vehicle:
             error_message = f"Vehicle not found for ID: {vehicle_id}"
             log_error(error_message)
+            # Send failure email notification
+            failure_email_body = generate_failure_email(error_message, vehicle_id=vehicle_id, payload=payload, stage="Fetching vehicle")
+            send_email(RECEIVER_EMAIL, "Error Updating Vehicle", failure_email_body)
             return jsonify({"error": error_message}), 404
 
         updated_fields = {}
 
+        # Update vehicle details if provided
         if 'vehicle_color' in payload:
             updated_fields['vehicle_color'] = payload['vehicle_color']
             vehicle.vehicle_color = payload['vehicle_color']
@@ -1998,12 +2004,13 @@ def update_purchased_vehicle():
                         tax.due_date = tax_data.get('due_date', tax.due_date)
                         log_info(f"Updated tax ID {tax_id}")
 
+        # Commit the transaction
         session.commit()
         log_info(f"Vehicle with ID {vehicle_id} updated successfully")
 
         # Prepare response
         response = vehicle.serialize_to_dict()
-        # Send email notification
+        # Send email notification of success
         notify_vehicle_update_success("Vehicle Update Notification", response, updated_fields)
 
         return jsonify({
@@ -2016,8 +2023,8 @@ def update_purchased_vehicle():
         error_message = f"Error updating vehicle: {str(e)}"
         log_error(error_message)
 
-        # Send failure email notification
-        failure_email_body = generate_failure_email(error_message)
+        # Send failure email notification with stage
+        failure_email_body = generate_failure_email(error_message, vehicle_id=vehicle_id, payload=payload, stage="Updating vehicle data")
         send_email(RECEIVER_EMAIL, "Error Updating Vehicle", failure_email_body)
 
         return jsonify({"error": "Internal server error", "details": error_message}), 500
@@ -2028,7 +2035,7 @@ def update_purchased_vehicle():
         log_error(error_message)
 
         # Send unexpected error email notification
-        unexpected_error_email_body = generate_failure_email(error_message)
+        unexpected_error_email_body = generate_failure_email(error_message, vehicle_id=vehicle_id, payload=payload, stage="Unknown")
         send_email(RECEIVER_EMAIL, "Unexpected Error Updating Vehicle", unexpected_error_email_body)
 
         return jsonify({"error": "Internal server error", "details": error_message}), 500
@@ -2036,6 +2043,7 @@ def update_purchased_vehicle():
     finally:
         session.close()
         log_info("End of update_purchased_vehicle function")
+
 
 
 if __name__ == "__main__":

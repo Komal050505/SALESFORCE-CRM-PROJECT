@@ -9,7 +9,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 
 
-DATABASE_URL = "postgresql://postgres:1995@localhost:5432/postgres"
+DATABASE_URL = "postgresql://yourpassword/postgres"
 
 """
 Configurations for setting up the database connection and session management
