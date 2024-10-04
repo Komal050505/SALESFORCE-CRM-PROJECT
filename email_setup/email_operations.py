@@ -11,9 +11,12 @@ Functions:
 
 # Standard library imports (for sending emails)
 import smtplib
+from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import List, Dict, Optional
+
+import pytz
 
 # Application-specific imports from our application(for email configuration details)
 from email_setup.email_config import (
@@ -665,3 +668,46 @@ def generate_failure_email(error_message, vehicle_id=None, payload=None, stage=N
 
     email_body.append("\nPlease review the error details and take necessary action.")
     return "\n".join(email_body)
+
+
+def send_vehicle_operation_email(email_type, vehicle_info, stage, error_message=None):
+    """
+    Sends plain text email notification for vehicle operations such as deletion or update.
+
+    :param email_type: Type of email - either "success" or "failure"
+    :param vehicle_info: Dictionary containing the vehicle information
+    :param stage: Stage of the operation (e.g., Fetching vehicle, Deleting vehicle)
+    :param error_message: Optional error message in case of failure
+    """
+    deletion_time = datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%I:%M %p, %B %d, %Y")
+
+    # Initialize default values to avoid referencing them before assignment
+    email_subject = "Vehicle Operation Notification"
+    email_body = f"Vehicle operation at stage: {stage} failed to generate a valid email_type."
+
+    if email_type == "success":
+        email_subject = "Vehicle Operation Successful"
+        email_body = (
+            f"Vehicle Operation Successful\n\n"
+            f"The following vehicle was processed successfully:\n"
+            f"Vehicle ID: {vehicle_info['vehicle_id']}\n"
+            f"Opportunity ID: {vehicle_info['opportunity_id']}\n"
+            f"Purchase Date: {vehicle_info['purchase_date']}\n"
+            f"Vehicle Model ID: {vehicle_info['vehicle_model_id']}\n"
+            f"Vehicle Color: {vehicle_info['vehicle_color']}\n"
+            f"Current Kilometers: {vehicle_info['current_kilometers']}\n"
+            f"Services: {vehicle_info['services']}\n"
+            f"Insurance: {vehicle_info['insurance']}\n"
+            f"Operation Time: {deletion_time}\n"
+        )
+    elif email_type == "failure":
+        email_subject = "Error During Vehicle Operation"
+        email_body = (
+            f"Vehicle Operation Failed\n\n"
+            f"The operation on the vehicle with ID {vehicle_info['vehicle_id']} failed at the stage: {stage}\n"
+            f"Error Message: {error_message}\n"
+            f"Operation Time: {deletion_time}\n"
+        )
+
+    # Send the email using your existing send_email function
+    send_email(RECEIVER_EMAIL, email_subject, email_body)

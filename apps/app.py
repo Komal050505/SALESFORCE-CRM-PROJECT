@@ -24,7 +24,8 @@ from email_setup.email_operations import (  # Email notifications
     notify_opportunity_update_success, format_vehicle_details, send_email,
     generate_vehicle_details_email_body, generate_detailed_vehicle_email, send_deletion_email,
     generate_user_vehicle_purchase_email, generate_team_vehicle_purchase_email,
-    generate_error_email, generate_success_email, notify_vehicle_update_success, generate_failure_email
+    generate_error_email, generate_success_email, notify_vehicle_update_success, generate_failure_email,
+    send_vehicle_operation_email
 )
 
 # Logging Utility
@@ -1959,7 +1960,8 @@ def update_purchased_vehicle():
             error_message = f"Vehicle not found for ID: {vehicle_id}"
             log_error(error_message)
             # Send failure email notification
-            failure_email_body = generate_failure_email(error_message, vehicle_id=vehicle_id, payload=payload, stage="Fetching vehicle")
+            failure_email_body = generate_failure_email(error_message, vehicle_id=vehicle_id, payload=payload,
+                                                        stage="Fetching vehicle")
             send_email(RECEIVER_EMAIL, "Error Updating Vehicle", failure_email_body)
             return jsonify({"error": error_message}), 404
 
@@ -1986,7 +1988,8 @@ def update_purchased_vehicle():
                         updated_fields['services'] = updated_fields.get('services', [])
                         updated_fields['services'].append(service_id)
                         service.service_type = service_data.get('service_type', service.service_type)
-                        service.kilometers_at_service = service_data.get('kilometers_at_service', service.kilometers_at_service)
+                        service.kilometers_at_service = service_data.get('kilometers_at_service',
+                                                                         service.kilometers_at_service)
                         service.description = service_data.get('description', service.description)
                         log_info(f"Updated service ID {service_id}")
 
@@ -2024,7 +2027,8 @@ def update_purchased_vehicle():
         log_error(error_message)
 
         # Send failure email notification with stage
-        failure_email_body = generate_failure_email(error_message, vehicle_id=vehicle_id, payload=payload, stage="Updating vehicle data")
+        failure_email_body = generate_failure_email(error_message, vehicle_id=vehicle_id, payload=payload,
+                                                    stage="Updating vehicle data")
         send_email(RECEIVER_EMAIL, "Error Updating Vehicle", failure_email_body)
 
         return jsonify({"error": "Internal server error", "details": error_message}), 500
@@ -2035,7 +2039,8 @@ def update_purchased_vehicle():
         log_error(error_message)
 
         # Send unexpected error email notification
-        unexpected_error_email_body = generate_failure_email(error_message, vehicle_id=vehicle_id, payload=payload, stage="Unknown")
+        unexpected_error_email_body = generate_failure_email(error_message, vehicle_id=vehicle_id, payload=payload,
+                                                             stage="Unknown")
         send_email(RECEIVER_EMAIL, "Unexpected Error Updating Vehicle", unexpected_error_email_body)
 
         return jsonify({"error": "Internal server error", "details": error_message}), 500
@@ -2044,6 +2049,66 @@ def update_purchased_vehicle():
         session.close()
         log_info("End of update_purchased_vehicle function")
 
+
+@app.route('/delete-purchased-vehicle', methods=["DELETE"])
+def delete_purchased_vehicle():
+    """
+    API to delete a purchased vehicle based on vehicle ID.
+    """
+    vehicle_id = request.args.get('vehicle_id')
+    log_info(f"Received request to delete vehicle with ID: {vehicle_id}")
+
+    try:
+        vehicle = session.query(PurchasedVehicles).filter_by(vehicle_id=vehicle_id).first()
+
+        if not vehicle:
+            error_message = f"Vehicle not found for ID: {vehicle_id}"
+            log_error(error_message)
+            send_vehicle_operation_email("failure", {"vehicle_id": vehicle_id},
+                                         "Fetching vehicle", error_message)
+            return jsonify({"error": error_message}), 404
+
+        vehicle_info = vehicle.serialize_to_dict()
+
+        session.delete(vehicle)
+        session.commit()
+
+        deletion_time = datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%I:%M %p, %B %d, %Y")
+        log_info(f"Vehicle with ID {vehicle_id} deleted successfully at {deletion_time}")
+
+        send_vehicle_operation_email("success", vehicle_info, "Deleting vehicle")
+
+        response = {
+            "message": "Vehicle deleted successfully",
+            "deleted_vehicle": vehicle_info,
+            "deletion_time": deletion_time
+        }
+
+        return jsonify(response), 200
+
+    except SQLAlchemyError as e:
+        session.rollback()
+        error_message = f"Error deleting vehicle: {str(e)}"
+        log_error(error_message)
+
+        send_vehicle_operation_email("failure", {"vehicle_id": vehicle_id},
+                                     "Deleting vehicle", error_message)
+
+        return jsonify({"error": "Internal server error", "details": error_message}), 500
+
+    except Exception as e:
+        session.rollback()
+        error_message = f"Unexpected error occurred: {str(e)}"
+        log_error(error_message)
+
+        send_vehicle_operation_email("failure", {"vehicle_id": vehicle_id},
+                                     "Unknown", error_message)
+
+        return jsonify({"error": "Internal server error", "details": error_message}), 500
+
+    finally:
+        session.close()
+        log_info("End of delete_purchased_vehicle function")
 
 
 if __name__ == "__main__":

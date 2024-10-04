@@ -321,6 +321,3 @@ class Insurance(Base):
             'insurance_expiry_date': self.insurance_expiry_date.strftime("%B %d, %Y"),
             'coverage_amount': self.coverage_amount
         }
-
-
-

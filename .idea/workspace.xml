@@ -8,6 +8,7 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apps/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/app.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/email_setup/email_operations.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_setup/email_operations.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user_models/tables.py" beforeDir="false" afterPath="$PROJECT_DIR$/user_models/tables.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
