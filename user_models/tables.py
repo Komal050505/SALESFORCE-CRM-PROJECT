@@ -255,10 +255,19 @@ class Taxes(Base):
     vehicle_id = Column(String, ForeignKey('purchased_vehicles.vehicle_id'), nullable=False)
     tax_amount = Column(Float, nullable=False)
     tax_type = Column(String, nullable=False)
-    due_date = Column(DateTime, nullable=False)
+    due_date = Column(String, nullable=False)
 
     # Relationship with PurchasedVehicles
     purchased_vehicle = relationship("PurchasedVehicles", backref="taxes")
+
+    def serialize_to_dict(self):
+        return {
+            "tax_id": self.tax_id,
+            "vehicle_id": self.vehicle_id,
+            "tax_amount": self.tax_amount,
+            "tax_type": self.tax_type,
+            "due_date": self.due_date
+        }
 
 
 # ------------------------------------------ Vehicle Services Table ----------------------------------------------------

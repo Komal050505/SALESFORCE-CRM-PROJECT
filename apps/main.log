@@ -11665,3 +11665,515 @@ WHERE %(param_1)s = insurance.vehicle_id
 2024-09-20 15:28:45,533 - INFO -  * Restarting with stat
 2024-09-20 15:28:49,094 - WARNING -  * Debugger is active!
 2024-09-20 15:28:49,099 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 16:56:24,063 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-10-04 16:56:24,063 - INFO - [33mPress CTRL+C to quit[0m
+2024-10-04 16:56:24,067 - INFO -  * Restarting with stat
+2024-10-04 16:56:25,309 - WARNING -  * Debugger is active!
+2024-10-04 16:56:25,316 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 16:56:27,727 - INFO - Received request to get purchased vehicle details
+2024-10-04 16:56:27,727 - INFO - Processing query parameters: ImmutableMultiDict([])
+2024-10-04 16:56:27,727 - INFO - Filters applied: Vehicle ID: None, Opportunity ID: None
+2024-10-04 16:56:27,825 - INFO - BEGIN (implicit)
+2024-10-04 16:56:27,828 - INFO - SELECT purchased_vehicles.vehicle_id AS purchased_vehicles_vehicle_id, purchased_vehicles.opportunity_id AS purchased_vehicles_opportunity_id, purchased_vehicles.purchase_date AS purchased_vehicles_purchase_date, purchased_vehicles.vehicle_model_id AS purchased_vehicles_vehicle_model_id, purchased_vehicles.vehicle_color AS purchased_vehicles_vehicle_color, purchased_vehicles.current_kilometers AS purchased_vehicles_current_kilometers 
+FROM purchased_vehicles
+2024-10-04 16:56:27,829 - INFO - [generated in 0.00034s] {}
+2024-10-04 16:56:27,843 - INFO - Retrieved 9 purchased vehicles from the database
+2024-10-04 16:56:27,846 - INFO - SELECT vehicle_details.vehicle_model_id AS vehicle_details_vehicle_model_id, vehicle_details.vehicle_model AS vehicle_details_vehicle_model, vehicle_details.vehicle_year AS vehicle_details_vehicle_year, vehicle_details.engine_type AS vehicle_details_engine_type, vehicle_details.transmission AS vehicle_details_transmission, vehicle_details.fuel_type AS vehicle_details_fuel_type, vehicle_details.body_type AS vehicle_details_body_type, vehicle_details.warranty_period_years AS vehicle_details_warranty_period_years, vehicle_details.color AS vehicle_details_color, vehicle_details.model_variant AS vehicle_details_model_variant, vehicle_details.tyre_company AS vehicle_details_tyre_company, vehicle_details.tyre_size AS vehicle_details_tyre_size, vehicle_details.start_type AS vehicle_details_start_type, vehicle_details.sunroof_available AS vehicle_details_sunroof_available, vehicle_details.gear_type AS vehicle_details_gear_type, vehicle_details.vehicle_type AS vehicle_details_vehicle_type 
+FROM vehicle_details 
+WHERE vehicle_details.vehicle_model_id = %(pk_1)s
+2024-10-04 16:56:27,847 - INFO - [generated in 0.00101s] {'pk_1': UUID('7874f345-766d-11ef-9a34-923fc78ed5c1')}
+2024-10-04 16:56:27,856 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services 
+WHERE %(param_1)s = vehicle_services.vehicle_id
+2024-10-04 16:56:27,856 - INFO - [generated in 0.00030s] {'param_1': UUID('8f7a822e-76c3-11ef-8b81-923fc78ed5c1')}
+2024-10-04 16:56:27,862 - INFO - SELECT insurance.insurance_id AS insurance_insurance_id, insurance.vehicle_id AS insurance_vehicle_id, insurance.insurance_company AS insurance_insurance_company, insurance.policy_number AS insurance_policy_number, insurance.insurance_start_date AS insurance_insurance_start_date, insurance.insurance_expiry_date AS insurance_insurance_expiry_date, insurance.coverage_amount AS insurance_coverage_amount 
+FROM insurance 
+WHERE %(param_1)s = insurance.vehicle_id
+2024-10-04 16:56:27,862 - INFO - [generated in 0.00042s] {'param_1': UUID('8f7a822e-76c3-11ef-8b81-923fc78ed5c1')}
+2024-10-04 16:56:27,869 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services 
+WHERE %(param_1)s = vehicle_services.vehicle_id
+2024-10-04 16:56:27,869 - INFO - [cached since 0.01323s ago] {'param_1': UUID('b4cf7f31-76c3-11ef-9926-923fc78ed5c1')}
+2024-10-04 16:56:27,870 - INFO - SELECT insurance.insurance_id AS insurance_insurance_id, insurance.vehicle_id AS insurance_vehicle_id, insurance.insurance_company AS insurance_insurance_company, insurance.policy_number AS insurance_policy_number, insurance.insurance_start_date AS insurance_insurance_start_date, insurance.insurance_expiry_date AS insurance_insurance_expiry_date, insurance.coverage_amount AS insurance_coverage_amount 
+FROM insurance 
+WHERE %(param_1)s = insurance.vehicle_id
+2024-10-04 16:56:27,870 - INFO - [cached since 0.008242s ago] {'param_1': UUID('b4cf7f31-76c3-11ef-9926-923fc78ed5c1')}
+2024-10-04 16:56:27,872 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services 
+WHERE %(param_1)s = vehicle_services.vehicle_id
+2024-10-04 16:56:27,872 - INFO - [cached since 0.01629s ago] {'param_1': UUID('baef97f8-7714-11ef-bcca-923fc78ed5c1')}
+2024-10-04 16:56:27,873 - INFO - SELECT insurance.insurance_id AS insurance_insurance_id, insurance.vehicle_id AS insurance_vehicle_id, insurance.insurance_company AS insurance_insurance_company, insurance.policy_number AS insurance_policy_number, insurance.insurance_start_date AS insurance_insurance_start_date, insurance.insurance_expiry_date AS insurance_insurance_expiry_date, insurance.coverage_amount AS insurance_coverage_amount 
+FROM insurance 
+WHERE %(param_1)s = insurance.vehicle_id
+2024-10-04 16:56:27,873 - INFO - [cached since 0.01138s ago] {'param_1': UUID('baef97f8-7714-11ef-bcca-923fc78ed5c1')}
+2024-10-04 16:56:27,875 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services 
+WHERE %(param_1)s = vehicle_services.vehicle_id
+2024-10-04 16:56:27,875 - INFO - [cached since 0.01959s ago] {'param_1': UUID('17d2e0e1-7718-11ef-b537-923fc78ed5c1')}
+2024-10-04 16:56:27,877 - INFO - SELECT insurance.insurance_id AS insurance_insurance_id, insurance.vehicle_id AS insurance_vehicle_id, insurance.insurance_company AS insurance_insurance_company, insurance.policy_number AS insurance_policy_number, insurance.insurance_start_date AS insurance_insurance_start_date, insurance.insurance_expiry_date AS insurance_insurance_expiry_date, insurance.coverage_amount AS insurance_coverage_amount 
+FROM insurance 
+WHERE %(param_1)s = insurance.vehicle_id
+2024-10-04 16:56:27,877 - INFO - [cached since 0.01524s ago] {'param_1': UUID('17d2e0e1-7718-11ef-b537-923fc78ed5c1')}
+2024-10-04 16:56:27,878 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services 
+WHERE %(param_1)s = vehicle_services.vehicle_id
+2024-10-04 16:56:27,878 - INFO - [cached since 0.02295s ago] {'param_1': UUID('86ede23c-7719-11ef-8244-923fc78ed5c1')}
+2024-10-04 16:56:27,881 - INFO - SELECT insurance.insurance_id AS insurance_insurance_id, insurance.vehicle_id AS insurance_vehicle_id, insurance.insurance_company AS insurance_insurance_company, insurance.policy_number AS insurance_policy_number, insurance.insurance_start_date AS insurance_insurance_start_date, insurance.insurance_expiry_date AS insurance_insurance_expiry_date, insurance.coverage_amount AS insurance_coverage_amount 
+FROM insurance 
+WHERE %(param_1)s = insurance.vehicle_id
+2024-10-04 16:56:27,881 - INFO - [cached since 0.01893s ago] {'param_1': UUID('86ede23c-7719-11ef-8244-923fc78ed5c1')}
+2024-10-04 16:56:27,882 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services 
+WHERE %(param_1)s = vehicle_services.vehicle_id
+2024-10-04 16:56:27,883 - INFO - [cached since 0.02758s ago] {'param_1': UUID('d4adabb0-771d-11ef-9518-923fc78ed5c1')}
+2024-10-04 16:56:27,885 - INFO - SELECT insurance.insurance_id AS insurance_insurance_id, insurance.vehicle_id AS insurance_vehicle_id, insurance.insurance_company AS insurance_insurance_company, insurance.policy_number AS insurance_policy_number, insurance.insurance_start_date AS insurance_insurance_start_date, insurance.insurance_expiry_date AS insurance_insurance_expiry_date, insurance.coverage_amount AS insurance_coverage_amount 
+FROM insurance 
+WHERE %(param_1)s = insurance.vehicle_id
+2024-10-04 16:56:27,885 - INFO - [cached since 0.02345s ago] {'param_1': UUID('d4adabb0-771d-11ef-9518-923fc78ed5c1')}
+2024-10-04 16:56:27,887 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services 
+WHERE %(param_1)s = vehicle_services.vehicle_id
+2024-10-04 16:56:27,887 - INFO - [cached since 0.03185s ago] {'param_1': UUID('f310ac0a-7730-11ef-ae2f-923fc78ed5c1')}
+2024-10-04 16:56:27,889 - INFO - SELECT insurance.insurance_id AS insurance_insurance_id, insurance.vehicle_id AS insurance_vehicle_id, insurance.insurance_company AS insurance_insurance_company, insurance.policy_number AS insurance_policy_number, insurance.insurance_start_date AS insurance_insurance_start_date, insurance.insurance_expiry_date AS insurance_insurance_expiry_date, insurance.coverage_amount AS insurance_coverage_amount 
+FROM insurance 
+WHERE %(param_1)s = insurance.vehicle_id
+2024-10-04 16:56:27,889 - INFO - [cached since 0.02712s ago] {'param_1': UUID('f310ac0a-7730-11ef-ae2f-923fc78ed5c1')}
+2024-10-04 16:56:27,890 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services 
+WHERE %(param_1)s = vehicle_services.vehicle_id
+2024-10-04 16:56:27,891 - INFO - [cached since 0.03506s ago] {'param_1': UUID('02f162ac-7731-11ef-9533-923fc78ed5c1')}
+2024-10-04 16:56:27,892 - INFO - SELECT insurance.insurance_id AS insurance_insurance_id, insurance.vehicle_id AS insurance_vehicle_id, insurance.insurance_company AS insurance_insurance_company, insurance.policy_number AS insurance_policy_number, insurance.insurance_start_date AS insurance_insurance_start_date, insurance.insurance_expiry_date AS insurance_insurance_expiry_date, insurance.coverage_amount AS insurance_coverage_amount 
+FROM insurance 
+WHERE %(param_1)s = insurance.vehicle_id
+2024-10-04 16:56:27,893 - INFO - [cached since 0.03138s ago] {'param_1': UUID('02f162ac-7731-11ef-9533-923fc78ed5c1')}
+2024-10-04 16:56:27,894 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services 
+WHERE %(param_1)s = vehicle_services.vehicle_id
+2024-10-04 16:56:27,894 - INFO - [cached since 0.0396s ago] {'param_1': UUID('19976398-7731-11ef-a551-923fc78ed5c1')}
+2024-10-04 16:56:27,896 - INFO - SELECT insurance.insurance_id AS insurance_insurance_id, insurance.vehicle_id AS insurance_vehicle_id, insurance.insurance_company AS insurance_insurance_company, insurance.policy_number AS insurance_policy_number, insurance.insurance_start_date AS insurance_insurance_start_date, insurance.insurance_expiry_date AS insurance_insurance_expiry_date, insurance.coverage_amount AS insurance_coverage_amount 
+FROM insurance 
+WHERE %(param_1)s = insurance.vehicle_id
+2024-10-04 16:56:27,897 - INFO - [cached since 0.03505s ago] {'param_1': UUID('19976398-7731-11ef-a551-923fc78ed5c1')}
+2024-10-04 16:56:32,331 - INFO - Sent email notification for 9 purchased vehicles
+2024-10-04 16:56:32,336 - INFO - ROLLBACK
+2024-10-04 16:56:32,337 - INFO - End of get_purchased_vehicles function
+2024-10-04 16:56:32,338 - INFO - 127.0.0.1 - - [04/Oct/2024 16:56:32] "GET /purchased-vehicles HTTP/1.1" 200 -
+2024-10-04 16:59:24,596 - INFO - Received request to update vehicle with ID: None
+2024-10-04 16:59:24,599 - DEBUG - Request payload: {'message': 'Vehicle updated successfully', 'updated_vehicle': {'vehicle_id': '19976398-7731-11ef-a551-923fc78ed5c1', 'vehicle_color': 'Red and Black', 'current_kilometers': 45000, 'services': 'only paid services left', 'taxes': 'Tax shoul be updated'}}
+2024-10-04 16:59:24,717 - INFO - BEGIN (implicit)
+2024-10-04 16:59:24,719 - INFO - SELECT purchased_vehicles.vehicle_id AS purchased_vehicles_vehicle_id, purchased_vehicles.opportunity_id AS purchased_vehicles_opportunity_id, purchased_vehicles.purchase_date AS purchased_vehicles_purchase_date, purchased_vehicles.vehicle_model_id AS purchased_vehicles_vehicle_model_id, purchased_vehicles.vehicle_color AS purchased_vehicles_vehicle_color, purchased_vehicles.current_kilometers AS purchased_vehicles_current_kilometers 
+FROM purchased_vehicles 
+WHERE purchased_vehicles.vehicle_id IS NULL 
+ LIMIT %(param_1)s
+2024-10-04 16:59:24,720 - INFO - [generated in 0.00035s] {'param_1': 1}
+2024-10-04 16:59:24,729 - ERROR - Vehicle not found for ID: None
+2024-10-04 16:59:29,586 - INFO - ROLLBACK
+2024-10-04 16:59:29,587 - INFO - End of update_purchased_vehicle function
+2024-10-04 16:59:29,587 - INFO - 127.0.0.1 - - [04/Oct/2024 16:59:29] "[33mPUT /update-purchased-vehicle HTTP/1.1[0m" 404 -
+2024-10-04 17:00:51,887 - INFO - Received request to update vehicle with ID: None
+2024-10-04 17:00:51,887 - DEBUG - Request payload: {'message': 'Vehicle updated successfully', 'updated_vehicle': {'vehicle_id': '7874f345-766d-11ef-9a34-923fc78ed5c1', 'vehicle_color': 'Red and Black', 'current_kilometers': 45000, 'services': 'only paid services left', 'taxes': 'Tax shoul be updated'}}
+2024-10-04 17:00:52,003 - INFO - BEGIN (implicit)
+2024-10-04 17:00:52,004 - INFO - SELECT purchased_vehicles.vehicle_id AS purchased_vehicles_vehicle_id, purchased_vehicles.opportunity_id AS purchased_vehicles_opportunity_id, purchased_vehicles.purchase_date AS purchased_vehicles_purchase_date, purchased_vehicles.vehicle_model_id AS purchased_vehicles_vehicle_model_id, purchased_vehicles.vehicle_color AS purchased_vehicles_vehicle_color, purchased_vehicles.current_kilometers AS purchased_vehicles_current_kilometers 
+FROM purchased_vehicles 
+WHERE purchased_vehicles.vehicle_id IS NULL 
+ LIMIT %(param_1)s
+2024-10-04 17:00:52,004 - INFO - [cached since 87.28s ago] {'param_1': 1}
+2024-10-04 17:00:52,008 - ERROR - Vehicle not found for ID: None
+2024-10-04 17:00:56,816 - INFO - ROLLBACK
+2024-10-04 17:00:56,817 - INFO - End of update_purchased_vehicle function
+2024-10-04 17:00:56,817 - INFO - 127.0.0.1 - - [04/Oct/2024 17:00:56] "[33mPUT /update-purchased-vehicle HTTP/1.1[0m" 404 -
+2024-10-04 17:03:47,458 - INFO - Received request to update vehicle with ID: None
+2024-10-04 17:03:47,458 - DEBUG - Request payload: {'vehicle_color': 'Red', 'current_kilometers': 45000, 'services': [{'service_id': '19ad2316-7731-11ef-ab8c-923fc78ed5c1', 'service_type': 'Oil Change', 'kilometers_at_service': 45000, 'description': 'Changed engine oil and filters'}], 'taxes': [{'tax_id': 501, 'tax_amount': 1200, 'tax_type': 'Road Tax', 'due_date': '2025-12-31'}]}
+2024-10-04 17:03:47,590 - INFO - BEGIN (implicit)
+2024-10-04 17:03:47,592 - INFO - SELECT purchased_vehicles.vehicle_id AS purchased_vehicles_vehicle_id, purchased_vehicles.opportunity_id AS purchased_vehicles_opportunity_id, purchased_vehicles.purchase_date AS purchased_vehicles_purchase_date, purchased_vehicles.vehicle_model_id AS purchased_vehicles_vehicle_model_id, purchased_vehicles.vehicle_color AS purchased_vehicles_vehicle_color, purchased_vehicles.current_kilometers AS purchased_vehicles_current_kilometers 
+FROM purchased_vehicles 
+WHERE purchased_vehicles.vehicle_id IS NULL 
+ LIMIT %(param_1)s
+2024-10-04 17:03:47,592 - INFO - [cached since 262.9s ago] {'param_1': 1}
+2024-10-04 17:03:47,596 - ERROR - Vehicle not found for ID: None
+2024-10-04 17:03:51,729 - INFO - ROLLBACK
+2024-10-04 17:03:51,730 - INFO - End of update_purchased_vehicle function
+2024-10-04 17:03:51,731 - INFO - 127.0.0.1 - - [04/Oct/2024 17:03:51] "[33mPUT /update-purchased-vehicle HTTP/1.1[0m" 404 -
+2024-10-04 17:09:31,742 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-04 17:09:31,926 - INFO -  * Restarting with stat
+2024-10-04 17:09:33,631 - WARNING -  * Debugger is active!
+2024-10-04 17:09:33,643 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:10:30,048 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-04 17:10:30,233 - INFO -  * Restarting with stat
+2024-10-04 17:10:31,685 - WARNING -  * Debugger is active!
+2024-10-04 17:10:31,688 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:11:30,013 - INFO - Received request to update vehicle with ID: 19976398-7731-11ef-a551-923fc78ed5c1
+2024-10-04 17:11:30,014 - DEBUG - Request payload: {'vehicle_color': 'Red', 'current_kilometers': 45000, 'services': [{'service_id': '19ad2316-7731-11ef-ab8c-923fc78ed5c1', 'service_type': 'Oil Change', 'kilometers_at_service': 45000, 'description': 'Changed engine oil and filters'}], 'taxes': [{'tax_id': 501, 'tax_amount': 1200, 'tax_type': 'Road Tax', 'due_date': '2025-12-31'}]}
+2024-10-04 17:11:30,145 - INFO - BEGIN (implicit)
+2024-10-04 17:11:30,148 - INFO - SELECT purchased_vehicles.vehicle_id AS purchased_vehicles_vehicle_id, purchased_vehicles.opportunity_id AS purchased_vehicles_opportunity_id, purchased_vehicles.purchase_date AS purchased_vehicles_purchase_date, purchased_vehicles.vehicle_model_id AS purchased_vehicles_vehicle_model_id, purchased_vehicles.vehicle_color AS purchased_vehicles_vehicle_color, purchased_vehicles.current_kilometers AS purchased_vehicles_current_kilometers 
+FROM purchased_vehicles 
+WHERE purchased_vehicles.vehicle_id = %(vehicle_id_1)s 
+ LIMIT %(param_1)s
+2024-10-04 17:11:30,149 - INFO - [generated in 0.00033s] {'vehicle_id_1': '19976398-7731-11ef-a551-923fc78ed5c1', 'param_1': 1}
+2024-10-04 17:11:30,163 - INFO - Updated vehicle color to: Red
+2024-10-04 17:11:30,163 - INFO - Updated current kilometers to: 45000
+2024-10-04 17:11:30,163 - INFO - ROLLBACK
+2024-10-04 17:11:30,165 - ERROR - Error updating vehicle: Entity namespace for "vehicle_services" has no property "id"
+2024-10-04 17:11:34,987 - INFO - End of update_purchased_vehicle function
+2024-10-04 17:11:34,988 - INFO - 127.0.0.1 - - [04/Oct/2024 17:11:34] "[35m[1mPUT /update-purchased-vehicle?vehicle_id=19976398-7731-11ef-a551-923fc78ed5c1 HTTP/1.1[0m" 500 -
+2024-10-04 17:14:10,591 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-04 17:14:10,805 - INFO -  * Restarting with stat
+2024-10-04 17:14:12,362 - WARNING -  * Debugger is active!
+2024-10-04 17:14:12,366 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:14:12,408 - INFO - Received request to update vehicle with ID: 19976398-7731-11ef-a551-923fc78ed5c1
+2024-10-04 17:14:12,408 - DEBUG - Request payload: {'vehicle_color': 'Red', 'current_kilometers': 45000, 'services': [{'service_id': '19ad2316-7731-11ef-ab8c-923fc78ed5c1', 'service_type': 'Oil Change', 'kilometers_at_service': 45000, 'description': 'Changed engine oil and filters'}], 'taxes': [{'tax_id': 501, 'tax_amount': 1200, 'tax_type': 'Road Tax', 'due_date': '2025-12-31'}]}
+2024-10-04 17:14:12,486 - INFO - BEGIN (implicit)
+2024-10-04 17:14:12,489 - INFO - SELECT purchased_vehicles.vehicle_id AS purchased_vehicles_vehicle_id, purchased_vehicles.opportunity_id AS purchased_vehicles_opportunity_id, purchased_vehicles.purchase_date AS purchased_vehicles_purchase_date, purchased_vehicles.vehicle_model_id AS purchased_vehicles_vehicle_model_id, purchased_vehicles.vehicle_color AS purchased_vehicles_vehicle_color, purchased_vehicles.current_kilometers AS purchased_vehicles_current_kilometers 
+FROM purchased_vehicles 
+WHERE purchased_vehicles.vehicle_id = %(vehicle_id_1)s 
+ LIMIT %(param_1)s
+2024-10-04 17:14:12,489 - INFO - [generated in 0.00045s] {'vehicle_id_1': '19976398-7731-11ef-a551-923fc78ed5c1', 'param_1': 1}
+2024-10-04 17:14:12,492 - INFO - Updated vehicle color to: Red
+2024-10-04 17:14:12,492 - INFO - Updated current kilometers to: 45000
+2024-10-04 17:14:12,496 - INFO - UPDATE purchased_vehicles SET current_kilometers=%(current_kilometers)s WHERE purchased_vehicles.vehicle_id = %(purchased_vehicles_vehicle_id)s
+2024-10-04 17:14:12,496 - INFO - [generated in 0.00023s] {'current_kilometers': 45000, 'purchased_vehicles_vehicle_id': UUID('19976398-7731-11ef-a551-923fc78ed5c1')}
+2024-10-04 17:14:12,515 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services 
+WHERE vehicle_services.service_id = %(service_id_1)s AND vehicle_services.vehicle_id = %(vehicle_id_1)s 
+ LIMIT %(param_1)s
+2024-10-04 17:14:12,515 - INFO - [generated in 0.00035s] {'service_id_1': '19ad2316-7731-11ef-ab8c-923fc78ed5c1', 'vehicle_id_1': '19976398-7731-11ef-a551-923fc78ed5c1', 'param_1': 1}
+2024-10-04 17:14:12,518 - INFO - Updated service ID 19ad2316-7731-11ef-ab8c-923fc78ed5c1
+2024-10-04 17:14:12,519 - INFO - UPDATE vehicle_services SET service_type=%(service_type)s, kilometers_at_service=%(kilometers_at_service)s, description=%(description)s WHERE vehicle_services.service_id = %(vehicle_services_service_id)s
+2024-10-04 17:14:12,519 - INFO - [generated in 0.00029s] {'service_type': 'Oil Change', 'kilometers_at_service': 45000, 'description': 'Changed engine oil and filters', 'vehicle_services_service_id': UUID('19ad2316-7731-11ef-ab8c-923fc78ed5c1')}
+2024-10-04 17:14:12,525 - INFO - SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes 
+WHERE taxes.tax_id = %(tax_id_1)s AND taxes.vehicle_id = %(vehicle_id_1)s 
+ LIMIT %(param_1)s
+2024-10-04 17:14:12,526 - INFO - [generated in 0.00042s] {'tax_id_1': 501, 'vehicle_id_1': '19976398-7731-11ef-a551-923fc78ed5c1', 'param_1': 1}
+2024-10-04 17:14:12,542 - INFO - ROLLBACK
+2024-10-04 17:14:12,543 - ERROR - Error updating vehicle: (psycopg2.errors.UndefinedFunction) operator does not exist: character varying = integer
+LINE 3: WHERE taxes.tax_id = 501 AND taxes.vehicle_id = '19976398-77...
+                           ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+
+[SQL: SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes 
+WHERE taxes.tax_id = %(tax_id_1)s AND taxes.vehicle_id = %(vehicle_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'tax_id_1': 501, 'vehicle_id_1': '19976398-7731-11ef-a551-923fc78ed5c1', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-10-04 17:14:17,200 - INFO - End of update_purchased_vehicle function
+2024-10-04 17:14:17,201 - INFO - 127.0.0.1 - - [04/Oct/2024 17:14:17] "[35m[1mPUT /update-purchased-vehicle?vehicle_id=19976398-7731-11ef-a551-923fc78ed5c1 HTTP/1.1[0m" 500 -
+2024-10-04 17:18:25,079 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-04 17:18:25,396 - INFO -  * Restarting with stat
+2024-10-04 17:18:26,781 - WARNING -  * Debugger is active!
+2024-10-04 17:18:26,784 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:18:39,501 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-04 17:18:39,739 - INFO -  * Restarting with stat
+2024-10-04 17:18:41,066 - WARNING -  * Debugger is active!
+2024-10-04 17:18:41,069 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:18:50,007 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-04 17:18:50,229 - INFO -  * Restarting with stat
+2024-10-04 17:18:51,400 - WARNING -  * Debugger is active!
+2024-10-04 17:18:51,403 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:18:58,179 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-04 17:18:58,335 - INFO -  * Restarting with stat
+2024-10-04 17:18:59,541 - WARNING -  * Debugger is active!
+2024-10-04 17:18:59,544 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:19:05,355 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-04 17:19:05,533 - INFO -  * Restarting with stat
+2024-10-04 17:19:06,745 - WARNING -  * Debugger is active!
+2024-10-04 17:19:06,749 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:19:45,358 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-04 17:19:45,625 - INFO -  * Restarting with stat
+2024-10-04 17:19:46,933 - WARNING -  * Debugger is active!
+2024-10-04 17:19:46,937 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:23:40,532 - INFO - Received request to get opportunities with query parameters
+2024-10-04 17:23:40,533 - INFO - Query parameters retrieved: opportunity_id=None, opportunity_name=, account_name=, stage=, probability_min=None, probability_max=None, created_date_start=None, close_date_end=None, vehicle_model=, vehicle_year_min=None, vehicle_year_max=None, vehicle_color=, amount_min=None, amount_max=None, vehicle_model_id=, case_sensitive=False
+2024-10-04 17:23:40,557 - INFO - Constructed initial query
+2024-10-04 17:23:40,677 - INFO - BEGIN (implicit)
+2024-10-04 17:23:40,680 - INFO - SELECT opportunity.opportunity_id AS opportunity_opportunity_id, opportunity.opportunity_name AS opportunity_opportunity_name, opportunity.account_name AS opportunity_account_name, opportunity.close_date AS opportunity_close_date, opportunity.amount AS opportunity_amount, opportunity.description AS opportunity_description, opportunity.dealer_id AS opportunity_dealer_id, opportunity.dealer_code AS opportunity_dealer_code, opportunity.stage AS opportunity_stage, opportunity.probability AS opportunity_probability, opportunity.next_step AS opportunity_next_step, opportunity.created_date AS opportunity_created_date, opportunity.vehicle_model_id AS opportunity_vehicle_model_id, opportunity.vehicle_model AS opportunity_vehicle_model, opportunity.vehicle_year AS opportunity_vehicle_year, opportunity.vehicle_color AS opportunity_vehicle_color, opportunity.amount_in_words AS opportunity_amount_in_words, opportunity.usd AS opportunity_usd, opportunity.aus AS opportunity_aus, opportunity.cad AS opportunity_cad, opportunity.jpy AS opportunity_jpy, opportunity.eur AS opportunity_eur, opportunity.gbp AS opportunity_gbp, opportunity.cny AS opportunity_cny 
+FROM opportunity
+2024-10-04 17:23:40,680 - INFO - [generated in 0.00025s] {}
+2024-10-04 17:23:40,687 - INFO - Fetched 33 opportunities based on query parameters
+2024-10-04 17:23:40,689 - INFO - Serialized opportunities to dictionary format
+2024-10-04 17:23:45,511 - INFO - End of get_opportunities function
+2024-10-04 17:23:45,513 - INFO - 127.0.0.1 - - [04/Oct/2024 17:23:45] "GET /get-opportunities HTTP/1.1" 200 -
+2024-10-04 17:26:49,837 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-04 17:26:50,050 - INFO -  * Restarting with stat
+2024-10-04 17:26:51,240 - WARNING -  * Debugger is active!
+2024-10-04 17:26:51,243 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:31:58,911 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\user_models\\tables.py', reloading
+2024-10-04 17:31:59,243 - INFO -  * Restarting with stat
+2024-10-04 17:32:00,587 - WARNING -  * Debugger is active!
+2024-10-04 17:32:00,590 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:32:10,970 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\user_models\\tables.py', reloading
+2024-10-04 17:32:11,141 - INFO -  * Restarting with stat
+2024-10-04 17:32:12,213 - WARNING -  * Debugger is active!
+2024-10-04 17:32:12,216 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:32:32,249 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-04 17:32:32,355 - INFO -  * Restarting with stat
+2024-10-04 17:32:33,222 - WARNING -  * Debugger is active!
+2024-10-04 17:32:33,225 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:35:06,791 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\user_models\\tables.py', reloading
+2024-10-04 17:35:06,926 - INFO -  * Restarting with stat
+2024-10-04 17:35:07,773 - WARNING -  * Debugger is active!
+2024-10-04 17:35:07,776 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:35:34,486 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\user_models\\tables.py', reloading
+2024-10-04 17:35:34,629 - INFO -  * Restarting with stat
+2024-10-04 17:35:35,512 - WARNING -  * Debugger is active!
+2024-10-04 17:35:35,515 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:36:22,898 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-04 17:36:23,012 - INFO -  * Restarting with stat
+2024-10-04 17:36:23,873 - WARNING -  * Debugger is active!
+2024-10-04 17:36:23,876 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:40:00,251 - DEBUG - Request payload: {'vehicle_id': '19976398-7731-11ef-a551-923fc78ed5c1', 'tax_amount': 15000.75, 'tax_type': 'Annual', 'due_date': '2024:11:30'}
+2024-10-04 17:40:00,381 - INFO - BEGIN (implicit)
+2024-10-04 17:40:00,384 - INFO - INSERT INTO taxes (tax_id, vehicle_id, tax_amount, tax_type, due_date) VALUES (%(tax_id)s, %(vehicle_id)s, %(tax_amount)s, %(tax_type)s, %(due_date)s)
+2024-10-04 17:40:00,384 - INFO - [generated in 0.00045s] {'tax_id': '0a58c7e7-2abe-4427-8d6a-d339aa276618', 'vehicle_id': '19976398-7731-11ef-a551-923fc78ed5c1', 'tax_amount': 15000.75, 'tax_type': 'Annual', 'due_date': '2024:11:30'}
+2024-10-04 17:40:00,391 - INFO - COMMIT
+2024-10-04 17:40:00,393 - INFO - Tax record created for vehicle ID: 19976398-7731-11ef-a551-923fc78ed5c1
+2024-10-04 17:40:00,465 - INFO - BEGIN (implicit)
+2024-10-04 17:40:00,469 - INFO - SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes 
+WHERE taxes.tax_id = %(pk_1)s
+2024-10-04 17:40:00,469 - INFO - [generated in 0.00042s] {'pk_1': '0a58c7e7-2abe-4427-8d6a-d339aa276618'}
+2024-10-04 17:40:00,473 - INFO - ROLLBACK
+2024-10-04 17:40:00,491 - INFO - 127.0.0.1 - - [04/Oct/2024 17:40:00] "[35m[1mPOST /create-tax HTTP/1.1[0m" 500 -
+2024-10-04 17:40:51,900 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\user_models\\tables.py', reloading
+2024-10-04 17:40:52,201 - INFO -  * Restarting with stat
+2024-10-04 17:40:53,740 - WARNING -  * Debugger is active!
+2024-10-04 17:40:53,744 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:40:53,786 - DEBUG - Request payload: {'vehicle_id': '19976398-7731-11ef-a551-923fc78ed5c1', 'tax_amount': 15000.75, 'tax_type': 'Annual', 'due_date': '2024:11:30'}
+2024-10-04 17:40:53,863 - INFO - BEGIN (implicit)
+2024-10-04 17:40:53,865 - INFO - INSERT INTO taxes (tax_id, vehicle_id, tax_amount, tax_type, due_date) VALUES (%(tax_id)s, %(vehicle_id)s, %(tax_amount)s, %(tax_type)s, %(due_date)s)
+2024-10-04 17:40:53,865 - INFO - [generated in 0.00027s] {'tax_id': '10319c18-da0b-4f39-895a-5f0815347984', 'vehicle_id': '19976398-7731-11ef-a551-923fc78ed5c1', 'tax_amount': 15000.75, 'tax_type': 'Annual', 'due_date': '2024:11:30'}
+2024-10-04 17:40:53,868 - INFO - COMMIT
+2024-10-04 17:40:53,869 - INFO - Tax record created for vehicle ID: 19976398-7731-11ef-a551-923fc78ed5c1
+2024-10-04 17:40:53,925 - INFO - BEGIN (implicit)
+2024-10-04 17:40:53,927 - INFO - SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes 
+WHERE taxes.tax_id = %(pk_1)s
+2024-10-04 17:40:53,927 - INFO - [generated in 0.00017s] {'pk_1': '10319c18-da0b-4f39-895a-5f0815347984'}
+2024-10-04 17:40:57,404 - INFO - ROLLBACK
+2024-10-04 17:40:57,405 - INFO - 127.0.0.1 - - [04/Oct/2024 17:40:57] "[35m[1mPOST /create-tax HTTP/1.1[0m" 201 -
+2024-10-04 17:48:06,188 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-04 17:48:06,348 - INFO -  * Restarting with stat
+2024-10-04 17:48:07,910 - WARNING -  * Debugger is active!
+2024-10-04 17:48:07,915 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:48:08,123 - DEBUG - Request payload: {'vehicle_id': '19976398-7731-11ef-a551-923fc78ed5c1', 'tax_amount': 15000.75, 'tax_type': 'Annual', 'due_date': '2024:11:30'}
+2024-10-04 17:48:08,236 - INFO - BEGIN (implicit)
+2024-10-04 17:48:08,239 - INFO - INSERT INTO taxes (tax_id, vehicle_id, tax_amount, tax_type, due_date) VALUES (%(tax_id)s, %(vehicle_id)s, %(tax_amount)s, %(tax_type)s, %(due_date)s)
+2024-10-04 17:48:08,239 - INFO - [generated in 0.00038s] {'tax_id': '446a40db-4f9f-4f69-b0d5-1552e2f84ee7', 'vehicle_id': '19976398-7731-11ef-a551-923fc78ed5c1', 'tax_amount': 15000.75, 'tax_type': 'Annual', 'due_date': '2024:11:30'}
+2024-10-04 17:48:08,247 - INFO - COMMIT
+2024-10-04 17:48:08,249 - INFO - Tax record created for vehicle ID: 19976398-7731-11ef-a551-923fc78ed5c1
+2024-10-04 17:48:08,324 - INFO - BEGIN (implicit)
+2024-10-04 17:48:08,327 - INFO - SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes 
+WHERE taxes.tax_id = %(pk_1)s
+2024-10-04 17:48:08,327 - INFO - [generated in 0.00027s] {'pk_1': '446a40db-4f9f-4f69-b0d5-1552e2f84ee7'}
+2024-10-04 17:48:11,920 - INFO - ROLLBACK
+2024-10-04 17:48:11,922 - INFO - 127.0.0.1 - - [04/Oct/2024 17:48:11] "[35m[1mPOST /create-tax HTTP/1.1[0m" 201 -
+2024-10-04 17:49:43,378 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-04 17:49:43,554 - INFO -  * Restarting with stat
+2024-10-04 17:49:44,928 - WARNING -  * Debugger is active!
+2024-10-04 17:49:44,933 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:49:44,984 - DEBUG - Request payload: {'vehicle_id': '19976398-7731-11ef-a551-923fc78ed5c1', 'tax_amount': 15000.75, 'tax_type': 'Annual', 'due_date': '2024:11:30'}
+2024-10-04 17:49:45,080 - INFO - BEGIN (implicit)
+2024-10-04 17:49:45,082 - INFO - INSERT INTO taxes (tax_id, vehicle_id, tax_amount, tax_type, due_date) VALUES (%(tax_id)s, %(vehicle_id)s, %(tax_amount)s, %(tax_type)s, %(due_date)s)
+2024-10-04 17:49:45,083 - INFO - [generated in 0.00034s] {'tax_id': 'cf84412f-4bc2-42ec-8287-e014d2ca04e0', 'vehicle_id': '19976398-7731-11ef-a551-923fc78ed5c1', 'tax_amount': 15000.75, 'tax_type': 'Annual', 'due_date': '2024:11:30'}
+2024-10-04 17:49:45,085 - INFO - COMMIT
+2024-10-04 17:49:45,086 - INFO - Tax record created for vehicle ID: 19976398-7731-11ef-a551-923fc78ed5c1
+2024-10-04 17:49:45,147 - INFO - BEGIN (implicit)
+2024-10-04 17:49:45,150 - INFO - SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes 
+WHERE taxes.tax_id = %(pk_1)s
+2024-10-04 17:49:45,150 - INFO - [generated in 0.00023s] {'pk_1': 'cf84412f-4bc2-42ec-8287-e014d2ca04e0'}
+2024-10-04 17:49:48,534 - INFO - ROLLBACK
+2024-10-04 17:49:48,536 - INFO - 127.0.0.1 - - [04/Oct/2024 17:49:48] "[35m[1mPOST /create-tax HTTP/1.1[0m" 201 -
+2024-10-04 17:51:29,192 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-04 17:51:29,350 - INFO -  * Restarting with stat
+2024-10-04 17:51:30,517 - WARNING -  * Debugger is active!
+2024-10-04 17:51:30,520 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:51:48,152 - ERROR - Please provide either tax_id or vehicle_id
+2024-10-04 17:51:48,153 - INFO - 127.0.0.1 - - [04/Oct/2024 17:51:48] "[31m[1mGET /get-tax HTTP/1.1[0m" 400 -
+2024-10-04 17:53:40,474 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-04 17:53:40,630 - INFO -  * Restarting with stat
+2024-10-04 17:53:41,869 - WARNING -  * Debugger is active!
+2024-10-04 17:53:41,873 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:53:42,225 - INFO - BEGIN (implicit)
+2024-10-04 17:53:42,227 - INFO - SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes
+2024-10-04 17:53:42,227 - INFO - [generated in 0.00018s] {}
+2024-10-04 17:53:42,229 - INFO - Fetched all tax records
+2024-10-04 17:53:42,230 - INFO - 127.0.0.1 - - [04/Oct/2024 17:53:42] "GET /get-tax HTTP/1.1" 200 -
+2024-10-04 17:54:45,907 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-10-04 17:54:45,908 - INFO - [33mPress CTRL+C to quit[0m
+2024-10-04 17:54:45,909 - INFO -  * Restarting with stat
+2024-10-04 17:54:46,968 - WARNING -  * Debugger is active!
+2024-10-04 17:54:46,971 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:59:03,632 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\email_setup\\email_operations.py', reloading
+2024-10-04 17:59:03,801 - INFO -  * Restarting with stat
+2024-10-04 17:59:04,807 - WARNING -  * Debugger is active!
+2024-10-04 17:59:04,811 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:59:30,943 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-04 17:59:31,051 - INFO -  * Restarting with stat
+2024-10-04 17:59:32,645 - WARNING -  * Debugger is active!
+2024-10-04 17:59:32,649 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 17:59:32,695 - ERROR - Please provide either tax_id or vehicle_id
+2024-10-04 17:59:32,695 - INFO - 127.0.0.1 - - [04/Oct/2024 17:59:32] "[31m[1mGET /get-tax HTTP/1.1[0m" 400 -
+2024-10-04 18:01:06,909 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-04 18:01:07,183 - INFO -  * Restarting with stat
+2024-10-04 18:01:08,325 - WARNING -  * Debugger is active!
+2024-10-04 18:01:08,329 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 18:01:09,008 - INFO - BEGIN (implicit)
+2024-10-04 18:01:09,010 - INFO - SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes
+2024-10-04 18:01:09,010 - INFO - [generated in 0.00024s] {}
+2024-10-04 18:01:09,014 - INFO - Fetched all tax records successfully
+2024-10-04 18:01:09,329 - INFO - ROLLBACK
+2024-10-04 18:01:09,345 - INFO - 127.0.0.1 - - [04/Oct/2024 18:01:09] "[35m[1mGET /get-tax HTTP/1.1[0m" 500 -
+2024-10-04 18:02:07,736 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-04 18:02:07,891 - INFO -  * Restarting with stat
+2024-10-04 18:02:08,944 - WARNING -  * Debugger is active!
+2024-10-04 18:02:08,948 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 18:02:25,947 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\email_setup\\email_operations.py', reloading
+2024-10-04 18:02:26,163 - INFO -  * Restarting with stat
+2024-10-04 18:02:27,163 - WARNING -  * Debugger is active!
+2024-10-04 18:02:27,167 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 18:02:28,479 - INFO - BEGIN (implicit)
+2024-10-04 18:02:28,482 - INFO - SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes
+2024-10-04 18:02:28,482 - INFO - [generated in 0.00025s] {}
+2024-10-04 18:02:28,486 - INFO - Fetched all tax records successfully
+2024-10-04 18:02:32,230 - INFO - ROLLBACK
+2024-10-04 18:02:32,232 - INFO - 127.0.0.1 - - [04/Oct/2024 18:02:32] "GET /get-tax HTTP/1.1" 200 -
+2024-10-04 18:04:20,020 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-04 18:04:20,139 - INFO -  * Restarting with stat
+2024-10-04 18:04:21,029 - WARNING -  * Debugger is active!
+2024-10-04 18:04:21,032 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 18:04:35,961 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\email_setup\\email_operations.py', reloading
+2024-10-04 18:04:36,124 - INFO -  * Restarting with stat
+2024-10-04 18:04:37,026 - WARNING -  * Debugger is active!
+2024-10-04 18:04:37,029 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 18:04:40,066 - INFO - BEGIN (implicit)
+2024-10-04 18:04:40,069 - INFO - SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes
+2024-10-04 18:04:40,069 - INFO - [generated in 0.00044s] {}
+2024-10-04 18:04:40,072 - INFO - Fetched all tax records successfully
+2024-10-04 18:04:43,625 - INFO - ROLLBACK
+2024-10-04 18:04:43,627 - INFO - 127.0.0.1 - - [04/Oct/2024 18:04:43] "GET /get-tax HTTP/1.1" 200 -
+2024-10-04 18:08:42,645 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\email_setup\\email_operations.py', reloading
+2024-10-04 18:08:42,873 - INFO -  * Restarting with stat
+2024-10-04 18:08:45,821 - WARNING -  * Debugger is active!
+2024-10-04 18:08:45,828 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 18:08:47,590 - INFO - BEGIN (implicit)
+2024-10-04 18:08:47,593 - INFO - SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes
+2024-10-04 18:08:47,593 - INFO - [generated in 0.00048s] {}
+2024-10-04 18:08:47,599 - INFO - Fetched all tax records successfully
+2024-10-04 18:08:51,143 - INFO - ROLLBACK
+2024-10-04 18:08:51,143 - INFO - 127.0.0.1 - - [04/Oct/2024 18:08:51] "GET /get-tax HTTP/1.1" 200 -
+2024-10-04 18:09:19,885 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\email_setup\\email_operations.py', reloading
+2024-10-04 18:09:20,115 - INFO -  * Restarting with stat
+2024-10-04 18:09:21,365 - WARNING -  * Debugger is active!
+2024-10-04 18:09:21,369 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 18:09:21,481 - INFO - BEGIN (implicit)
+2024-10-04 18:09:21,484 - INFO - SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes
+2024-10-04 18:09:21,484 - INFO - [generated in 0.00055s] {}
+2024-10-04 18:09:21,486 - INFO - Fetched all tax records successfully
+2024-10-04 18:09:25,018 - INFO - ROLLBACK
+2024-10-04 18:09:25,019 - INFO - 127.0.0.1 - - [04/Oct/2024 18:09:25] "GET /get-tax HTTP/1.1" 200 -
+2024-10-04 18:10:28,864 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\email_setup\\email_operations.py', reloading
+2024-10-04 18:10:29,145 - INFO -  * Restarting with stat
+2024-10-04 18:10:30,412 - WARNING -  * Debugger is active!
+2024-10-04 18:10:30,416 - INFO -  * Debugger PIN: 480-735-411
+2024-10-04 18:10:30,758 - INFO - BEGIN (implicit)
+2024-10-04 18:10:30,760 - INFO - SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes
+2024-10-04 18:10:30,761 - INFO - [generated in 0.00081s] {}
+2024-10-04 18:10:30,764 - INFO - Fetched all tax records successfully
+2024-10-04 18:10:34,390 - INFO - ROLLBACK
+2024-10-04 18:10:34,392 - INFO - 127.0.0.1 - - [04/Oct/2024 18:10:34] "GET /get-tax HTTP/1.1" 200 -
+2024-10-04 18:11:39,563 - INFO - BEGIN (implicit)
+2024-10-04 18:11:39,565 - INFO - SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes 
+WHERE taxes.tax_id = %(tax_id_1)s 
+ LIMIT %(param_1)s
+2024-10-04 18:11:39,566 - INFO - [generated in 0.00056s] {'tax_id_1': '856b9a2c-6448-4663-aa68-9713fc4b1b55', 'param_1': 1}
+2024-10-04 18:11:39,571 - INFO - Fetched tax details for tax_id: 856b9a2c-6448-4663-aa68-9713fc4b1b55
+2024-10-04 18:11:43,110 - INFO - ROLLBACK
+2024-10-04 18:11:43,112 - INFO - 127.0.0.1 - - [04/Oct/2024 18:11:43] "GET /get-tax?tax_id=856b9a2c-6448-4663-aa68-9713fc4b1b55 HTTP/1.1" 200 -
+2024-10-05 23:13:46,827 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-10-05 23:13:46,828 - INFO - [33mPress CTRL+C to quit[0m
+2024-10-05 23:13:46,830 - INFO -  * Restarting with stat
+2024-10-05 23:13:47,982 - WARNING -  * Debugger is active!
+2024-10-05 23:13:47,988 - INFO -  * Debugger PIN: 480-735-411
+2024-10-05 23:13:51,126 - INFO - BEGIN (implicit)
+2024-10-05 23:13:51,130 - INFO - SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes 
+WHERE taxes.tax_id = %(tax_id_1)s 
+ LIMIT %(param_1)s
+2024-10-05 23:13:51,130 - INFO - [generated in 0.00031s] {'tax_id_1': '856b9a2c-6448-4663-aa68-9713fc4b1b55', 'param_1': 1}
+2024-10-05 23:13:51,140 - INFO - Fetched tax details for tax_id: 856b9a2c-6448-4663-aa68-9713fc4b1b55
+2024-10-05 23:13:55,527 - INFO - ROLLBACK
+2024-10-05 23:13:55,529 - INFO - 127.0.0.1 - - [05/Oct/2024 23:13:55] "GET /get-tax?tax_id=856b9a2c-6448-4663-aa68-9713fc4b1b55 HTTP/1.1" 200 -
+2024-10-05 23:14:42,164 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-05 23:14:42,491 - INFO -  * Restarting with stat
+2024-10-05 23:14:44,597 - WARNING -  * Debugger is active!
+2024-10-05 23:14:44,605 - INFO -  * Debugger PIN: 480-735-411
+2024-10-05 23:20:19,968 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-05 23:20:20,261 - INFO -  * Restarting with stat
+2024-10-05 23:20:22,090 - WARNING -  * Debugger is active!
+2024-10-05 23:20:22,095 - INFO -  * Debugger PIN: 480-735-411
+2024-10-05 23:20:43,692 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-05 23:20:43,921 - INFO -  * Restarting with stat
+2024-10-05 23:20:45,240 - WARNING -  * Debugger is active!
+2024-10-05 23:20:45,244 - INFO -  * Debugger PIN: 480-735-411
+2024-10-05 23:22:21,803 - DEBUG - Request payload: {'tax_id': '856b9a2c-6448-4663-aa68-9713fc4b1b55', 'tax_amount': 20000.0, 'tax_type': 'GST', 'due_date': '2024-12-31'}
+2024-10-05 23:22:22,024 - INFO - BEGIN (implicit)
+2024-10-05 23:22:22,030 - INFO - SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes 
+WHERE taxes.tax_id = %(tax_id_1)s 
+ LIMIT %(param_1)s
+2024-10-05 23:22:22,030 - INFO - [generated in 0.00043s] {'tax_id_1': '856b9a2c-6448-4663-aa68-9713fc4b1b55', 'param_1': 1}
+2024-10-05 23:22:22,049 - INFO - UPDATE taxes SET tax_amount=%(tax_amount)s, tax_type=%(tax_type)s, due_date=%(due_date)s WHERE taxes.tax_id = %(taxes_tax_id)s
+2024-10-05 23:22:22,050 - INFO - [generated in 0.00049s] {'tax_amount': 20000.0, 'tax_type': 'GST', 'due_date': '2024-12-31', 'taxes_tax_id': '856b9a2c-6448-4663-aa68-9713fc4b1b55'}
+2024-10-05 23:22:22,065 - INFO - COMMIT
+2024-10-05 23:22:22,069 - INFO - Updated tax record with tax_id: 856b9a2c-6448-4663-aa68-9713fc4b1b55
+2024-10-05 23:22:22,171 - INFO - BEGIN (implicit)
+2024-10-05 23:22:22,174 - INFO - SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes 
+WHERE taxes.tax_id = %(pk_1)s
+2024-10-05 23:22:22,174 - INFO - [generated in 0.00041s] {'pk_1': '856b9a2c-6448-4663-aa68-9713fc4b1b55'}
+2024-10-05 23:22:26,926 - INFO - ROLLBACK
+2024-10-05 23:22:26,927 - INFO - 127.0.0.1 - - [05/Oct/2024 23:22:26] "PUT /update-tax HTTP/1.1" 200 -
+2024-10-05 23:23:49,063 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-05 23:23:49,300 - INFO -  * Restarting with stat
+2024-10-05 23:23:50,939 - WARNING -  * Debugger is active!
+2024-10-05 23:23:50,944 - INFO -  * Debugger PIN: 480-735-411
+2024-10-05 23:23:50,986 - DEBUG - Request payload: {'tax_id': '856b9a2c-6448-4663-aa68-9713fc4b1b55', 'tax_amount': 20000.0, 'tax_type': 'GST', 'due_date': '2024-12-31'}
+2024-10-05 23:23:51,070 - INFO - BEGIN (implicit)
+2024-10-05 23:23:51,074 - INFO - SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes 
+WHERE taxes.tax_id = %(tax_id_1)s 
+ LIMIT %(param_1)s
+2024-10-05 23:23:51,074 - INFO - [generated in 0.00045s] {'tax_id_1': '856b9a2c-6448-4663-aa68-9713fc4b1b55', 'param_1': 1}
+2024-10-05 23:23:51,081 - INFO - COMMIT
+2024-10-05 23:23:51,082 - INFO - Updated tax record with tax_id: 856b9a2c-6448-4663-aa68-9713fc4b1b55
+2024-10-05 23:23:51,389 - INFO - BEGIN (implicit)
+2024-10-05 23:23:51,393 - INFO - SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes 
+WHERE taxes.tax_id = %(pk_1)s
+2024-10-05 23:23:51,393 - INFO - [generated in 0.00081s] {'pk_1': '856b9a2c-6448-4663-aa68-9713fc4b1b55'}
+2024-10-05 23:23:55,023 - INFO - ROLLBACK
+2024-10-05 23:23:55,026 - INFO - 127.0.0.1 - - [05/Oct/2024 23:23:55] "PUT /update-tax HTTP/1.1" 200 -
+2024-10-05 23:28:52,763 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-05 23:28:52,963 - INFO -  * Restarting with stat
+2024-10-05 23:28:54,761 - WARNING -  * Debugger is active!
+2024-10-05 23:28:54,768 - INFO -  * Debugger PIN: 480-735-411
+2024-10-05 23:32:05,184 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\email_setup\\email_config.py', reloading
+2024-10-05 23:32:05,386 - INFO -  * Restarting with stat
+2024-10-05 23:32:06,558 - WARNING -  * Debugger is active!
+2024-10-05 23:32:06,561 - INFO -  * Debugger PIN: 480-735-411
+2024-10-05 23:32:08,719 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\db_connections\\configurations.py', reloading
+2024-10-05 23:32:08,985 - INFO -  * Restarting with stat

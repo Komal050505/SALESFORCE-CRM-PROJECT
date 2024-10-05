@@ -711,3 +711,53 @@ def send_vehicle_operation_email(email_type, vehicle_info, stage, error_message=
 
     # Send the email using your existing send_email function
     send_email(RECEIVER_EMAIL, email_subject, email_body)
+
+
+def send_tax_operation_email(email_type, tax_info, stage, total_insurances=None, error_message=None):
+    """
+    Sends plain text email notification for tax operations such as fetching tax details.
+
+    :param email_type: Type of email - either "success" or "failure"
+    :param tax_info: Dictionary or list containing tax information
+    :param stage: Stage of the operation (e.g., Fetching tax record)
+    :param total_insurances: Total number of insurances (if applicable)
+    :param error_message: Optional error message in case of failure
+    """
+    deletion_time = datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%I:%M %p, %B %d, %Y")
+
+    # Initialize default values to avoid referencing them before assignment
+    email_subject = "Tax Operation Notification"
+    email_body = f"Tax operation at stage: {stage} failed to generate a valid email_type."
+
+    if email_type == "success":
+        email_subject = "Tax Operation Successful"
+        email_body = (
+            f"Tax Operation Successful\n\n"
+            f"Stage: {stage}\n"
+            f"Operation Time: {deletion_time}\n"
+        )
+
+        if isinstance(tax_info, list):
+            email_body += f"Total Insurances: {total_insurances}\n\n"
+            email_body += "The following tax records were processed successfully:\n\n"
+            for info in tax_info:
+                email_body += (
+                    f"Tax ID: {info['tax_id']}\n"
+                    f"Vehicle ID: {info['vehicle_id']}\n\n\n"
+                )
+        else:
+            email_body += (
+                f"Tax ID: {tax_info['tax_id']}\n"
+                f"Vehicle ID: {tax_info['vehicle_id']}\n"
+            )
+    elif email_type == "failure":
+        email_subject = "Error During Tax Operation"
+        email_body = (
+            f"Tax Operation Failed\n\n"
+            f"Stage: {stage}\n"
+            f"Error Message: {error_message}\n"
+            f"Operation Time: {deletion_time}\n"
+        )
+
+    # Send the email using your existing send_email function
+    send_email(RECEIVER_EMAIL, email_subject, email_body)

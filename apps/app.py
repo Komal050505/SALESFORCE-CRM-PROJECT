@@ -25,7 +25,7 @@ from email_setup.email_operations import (  # Email notifications
     generate_vehicle_details_email_body, generate_detailed_vehicle_email, send_deletion_email,
     generate_user_vehicle_purchase_email, generate_team_vehicle_purchase_email,
     generate_error_email, generate_success_email, notify_vehicle_update_success, generate_failure_email,
-    send_vehicle_operation_email
+    send_vehicle_operation_email, send_tax_operation_email
 )
 
 # Logging Utility
@@ -1943,14 +1943,22 @@ def update_purchased_vehicle():
     """
     API to update the details of a purchased vehicle.
     """
-    vehicle_id = request.args.get('vehicle_id')  # Ensure you get the vehicle ID from the request
+    # Get vehicle ID from query parameters or body
+    vehicle_id = request.args.get('vehicle_id')
+    payload = request.get_json()
+
+    # If vehicle_id is not provided in query, look in the payload
+    if not vehicle_id and payload:
+        vehicle_id = payload.get('vehicle_id')
+
     log_info(f"Received request to update vehicle with ID: {vehicle_id}")
 
-    payload = None  # Initialize payload to ensure it's always defined
+    if not vehicle_id:
+        error_message = "Vehicle ID not provided"
+        log_error(error_message)
+        return jsonify({"error": error_message}), 400
 
     try:
-        # Get the payload from the request
-        payload = request.get_json()
         log_debug(f"Request payload: {payload}")
 
         # Fetch the existing vehicle record
@@ -1983,7 +1991,8 @@ def update_purchased_vehicle():
             for service_data in payload['services']:
                 service_id = service_data.get('service_id')
                 if service_id:
-                    service = session.query(VehicleServices).filter_by(id=service_id, vehicle_id=vehicle_id).first()
+                    service = session.query(VehicleServices).filter_by(service_id=service_id,
+                                                                       vehicle_id=vehicle_id).first()
                     if service:
                         updated_fields['services'] = updated_fields.get('services', [])
                         updated_fields['services'].append(service_id)
@@ -2109,6 +2118,272 @@ def delete_purchased_vehicle():
     finally:
         session.close()
         log_info("End of delete_purchased_vehicle function")
+
+
+# --------------------------------------------- TAXES TABLE ------------------------------------------------------------
+
+@app.route('/create-tax', methods=["POST"])
+def create_tax():
+    """
+    API to create a new tax record for a vehicle.
+    """
+    try:
+        payload = request.get_json()
+        log_debug(f"Request payload: {payload}")
+
+        if not payload.get('vehicle_id') or not payload.get('tax_amount') or not payload.get(
+                'tax_type') or not payload.get('due_date'):
+            error_message = "Missing required fields (vehicle_id, tax_amount, tax_type, due_date)"
+            log_error(error_message)
+            return jsonify({"error": error_message}), 400
+
+        try:
+            due_date = datetime.strptime(payload['due_date'], '%Y:%m:%d')
+            formatted_due_date = due_date.strftime('%Y:%m:%d')
+        except ValueError:
+            error_message = "Invalid due date format. Please use 'yyyy:mm:dd' format."
+            log_error(error_message)
+            return jsonify({"error": error_message}), 400
+
+        new_tax = Taxes(
+            vehicle_id=payload['vehicle_id'],
+            tax_amount=payload['tax_amount'],
+            tax_type=payload['tax_type'],
+            due_date=formatted_due_date
+        )
+
+        session.add(new_tax)
+        session.commit()
+
+        log_info(f"Tax record created for vehicle ID: {payload['vehicle_id']}")
+        response = new_tax.serialize_to_dict()
+
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        email_body = (
+            f"Tax record created successfully for vehicle ID: \n\n{payload['vehicle_id']}\n"
+            f"Tax Amount: {payload['tax_amount']}\n"
+            f"Tax Type: {payload['tax_type']}\n"
+            f"Due Date: {formatted_due_date}\n"
+            f"Created At: {current_time}"
+        )
+
+        send_email(RECEIVER_EMAIL, "Tax Record Created", email_body)
+
+        return jsonify({
+            "message": "Tax record created successfully",
+            "tax_record": response,
+            "created at ": current_time
+        }), 201
+
+    except SQLAlchemyError as e:
+        session.rollback()
+        error_message = f"Database error while creating tax record: {str(e)}"
+        log_error(error_message)
+        return jsonify({"error": error_message}), 500
+
+    finally:
+        session.close()
+
+
+@app.route('/get-tax', methods=["GET"])
+def get_tax():
+    """
+    API to fetch tax details by tax_id or vehicle_id.
+    If no parameters are provided, return all records.
+    """
+    tax_id = request.args.get('tax_id')
+    vehicle_id = request.args.get('vehicle_id')
+
+    try:
+        if tax_id:
+            tax_record = session.query(Taxes).filter_by(tax_id=tax_id).first()
+            if not tax_record:
+                error_message = f"No tax record found for tax_id: {tax_id}"
+                log_error(error_message)
+                send_tax_operation_email("failure", {"vehicle_id": "N/A"},
+                                         "Fetching tax record", error_message)
+                return jsonify({"error": error_message}), 404
+
+            log_info(f"Fetched tax details for tax_id: {tax_id}")
+            response = {
+                "message": "Tax record fetched successfully",
+                "tax_record": tax_record.serialize_to_dict()
+            }
+
+            send_tax_operation_email("success", response['tax_record'], "Fetching tax record")
+            return jsonify(response), 200
+
+        elif vehicle_id:
+            tax_record = session.query(Taxes).filter_by(vehicle_id=vehicle_id).first()
+
+            if not tax_record:
+                error_message = f"No tax record found for vehicle_id: {vehicle_id}"
+                log_error(error_message)
+                send_tax_operation_email("failure", {"vehicle_id": vehicle_id},
+                                         "Fetching tax record", error_message)
+                return jsonify({"error": error_message}), 404
+
+            log_info(f"Fetched tax details for vehicle_id: {vehicle_id}")
+            response = {
+                "message": "Tax record fetched successfully",
+                "tax_record": tax_record.serialize_to_dict()
+            }
+
+            send_tax_operation_email("success", response['tax_record'], "Fetching tax record")
+
+            return jsonify(response), 200
+
+        else:
+            all_tax_records = session.query(Taxes).all()
+
+            serialized_records = [tax.serialize_to_dict() for tax in all_tax_records]
+            total_insurances = len(serialized_records)
+
+            response = {
+                "message": "All tax records fetched successfully",
+                "total_insurances": total_insurances,
+                "tax_records": serialized_records
+            }
+            log_info("Fetched all tax records successfully")
+
+            send_tax_operation_email("success", serialized_records,
+                                     "Fetching all tax records", total_insurances)
+
+            return jsonify(response), 200
+
+    except SQLAlchemyError as e:
+        session.rollback()
+        error_message = f"Error fetching tax record: {str(e)}"
+        log_error(error_message)
+        send_tax_operation_email("failure", {"vehicle_id": vehicle_id or "N/A"},
+                                 "Fetching tax record", error_message)
+        return jsonify({"error": error_message}), 500
+
+    finally:
+        session.close()
+
+
+@app.route('/update-tax', methods=["PUT"])
+def update_tax():
+    """
+    API to update an existing tax record by tax_id passed in the request body.
+    Updates only the fields provided in the JSON payload.
+    """
+    try:
+        payload = request.get_json()
+        log_debug(f"Request payload: {payload}")
+
+        tax_id = payload.get('tax_id')
+        if not tax_id:
+            error_message = "tax_id is required in the request body"
+            log_error(error_message)
+            return jsonify({"error": error_message}), 400
+
+        tax_record = session.query(Taxes).filter_by(tax_id=tax_id).first()
+
+        if not tax_record:
+            error_message = f"Tax record not found for tax_id: {tax_id}"
+            log_error(error_message)
+            return jsonify({"error": error_message}), 404
+
+        updates = {}
+
+        if 'tax_amount' in payload:
+            tax_record.tax_amount = payload['tax_amount']
+            updates['tax_amount'] = payload['tax_amount']
+
+        if 'tax_type' in payload:
+            tax_record.tax_type = payload['tax_type']
+            updates['tax_type'] = payload['tax_type']
+
+        if 'due_date' in payload:
+            tax_record.due_date = payload['due_date']
+            updates['due_date'] = payload['due_date']
+
+        session.commit()
+        log_info(f"Updated tax record with tax_id: {tax_id}")
+        response = tax_record.serialize_to_dict()
+
+        updated_fields = "\n".join([f"{key}: {value}" for key, value in updates.items()])
+        success_message = f"Tax record updated successfully for tax_id: {tax_id}.\n\nUpdated fields:\n{updated_fields}"
+
+        send_email(RECEIVER_EMAIL, "Tax Record Updated", success_message)
+
+        return jsonify({
+            "message": success_message,
+            "tax_record": response
+        }), 200
+
+    except SQLAlchemyError as e:
+        session.rollback()
+        error_message = f"Error updating tax record: {str(e)}"
+        log_error(error_message)
+        return jsonify({"error": error_message}), 500
+
+    finally:
+        session.close()
+
+
+@app.route('/delete-tax', methods=["DELETE"])
+def delete_tax():
+    """
+    API to delete a tax record by tax_id passed in query parameters.
+    Sends detailed email notifications with deletion time and full details
+    about the deleted tax record.
+    """
+    try:
+        tax_id = request.args.get('tax_id')
+
+        if not tax_id:
+            error_message = "tax_id is required in query parameters"
+            log_error(error_message)
+            return jsonify({"error": error_message}), 400
+
+        tax_record = session.query(Taxes).filter_by(tax_id=tax_id).first()
+
+        if not tax_record:
+            error_message = f"Tax record not found for tax_id: {tax_id}"
+            log_error(error_message)
+            return jsonify({"error": error_message}), 404
+
+        deleted_record_details = {
+            "tax_id": tax_record.tax_id,
+            "tax_amount": tax_record.tax_amount,
+            "tax_type": tax_record.tax_type,
+            "due_date": tax_record.due_date,
+            "deleted_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+
+        session.delete(tax_record)
+        session.commit()
+
+        log_info(f"Deleted tax record with tax_id: {tax_id} at {deleted_record_details['deleted_at']}")
+
+        email_content = (
+            f"Tax record deleted successfully for tax_id: {tax_id}.\n\n"
+            f"Deleted Record Details:\n"
+            f"Tax ID: {deleted_record_details['tax_id']}\n"
+            f"Tax Amount: {deleted_record_details['tax_amount']}\n"
+            f"Tax Type: {deleted_record_details['tax_type']}\n"
+            f"Due Date: {deleted_record_details['due_date']}\n"
+            f"Deletion Time: {deleted_record_details['deleted_at']}\n"
+        )
+
+        send_email(RECEIVER_EMAIL, "Tax Record Deleted", email_content)
+
+        return jsonify({
+            "message": f"Tax record with tax_id: {tax_id} deleted successfully",
+            "deleted_record_details": deleted_record_details
+        }), 200
+
+    except SQLAlchemyError as e:
+        session.rollback()
+        error_message = f"Error deleting tax record: {str(e)}"
+        log_error(error_message)
+        return jsonify({"error": error_message}), 500
+
+    finally:
+        session.close()
 
 
 if __name__ == "__main__":
