@@ -295,7 +295,7 @@ class VehicleServices(Base):
         return {
             'service_id': self.service_id,
             'vehicle_id': self.vehicle_id,
-            'service_date': self.service_date.strftime("%I:%M %p, %B %d, %Y"),
+            'service_date': self.service_date.strftime("%Y-%m-%d"),
             'service_type': self.service_type,
             'kilometers_at_service': self.kilometers_at_service,
             'description': self.description

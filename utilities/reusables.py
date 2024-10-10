@@ -164,3 +164,44 @@ def calculate_taxes(vehicle_id, tax_amount):
         due_date=datetime.now() + timedelta(days=365)  # Example due date: 1 year from now
     )
     return tax_record
+
+
+from functools import wraps
+from flask import request, jsonify
+import random
+import time
+
+# In-memory store for OTPs (you should replace this with a database in a production environment)
+otp_store = {}
+
+
+
+
+
+# Universal OTP Decorator
+def otp_required(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        payload = request.get_json()
+
+        # Check if the payload contains the email and OTP
+        if not payload or 'email' not in payload or 'otp' not in payload:
+            return jsonify({"error": "Email and OTP are required."}), 400
+
+        email = payload['email']
+        otp = payload['otp']
+
+        # Check if OTP exists for this email
+        if email not in otp_store:
+            return jsonify({"error": "No OTP generated for this email."}), 400
+
+        stored_otp_data = otp_store[email]
+        if time.time() - stored_otp_data['timestamp'] > 300:  # OTP valid for 5 minutes
+            return jsonify({"error": "OTP has expired."}), 400
+        if int(otp) != stored_otp_data['otp']:
+            return jsonify({"error": "Invalid OTP."}), 400
+
+        # OTP is valid, proceed with the function
+        return func(*args, **kwargs)
+
+    return wrapper

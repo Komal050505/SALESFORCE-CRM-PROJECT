@@ -12177,3 +12177,376 @@ WHERE taxes.tax_id = %(pk_1)s
 2024-10-05 23:32:06,561 - INFO -  * Debugger PIN: 480-735-411
 2024-10-05 23:32:08,719 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\db_connections\\configurations.py', reloading
 2024-10-05 23:32:08,985 - INFO -  * Restarting with stat
+2024-10-05 23:33:36,463 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-10-05 23:33:36,463 - INFO - [33mPress CTRL+C to quit[0m
+2024-10-05 23:33:36,464 - INFO -  * Restarting with stat
+2024-10-05 23:33:37,368 - WARNING -  * Debugger is active!
+2024-10-05 23:33:37,372 - INFO -  * Debugger PIN: 480-735-411
+2024-10-05 23:34:44,607 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-05 23:34:44,810 - INFO -  * Restarting with stat
+2024-10-05 23:34:45,946 - WARNING -  * Debugger is active!
+2024-10-05 23:34:45,950 - INFO -  * Debugger PIN: 480-735-411
+2024-10-05 23:35:29,061 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-05 23:35:29,324 - INFO -  * Restarting with stat
+2024-10-05 23:35:30,710 - WARNING -  * Debugger is active!
+2024-10-05 23:35:30,714 - INFO -  * Debugger PIN: 480-735-411
+2024-10-05 23:35:37,954 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-05 23:35:38,212 - INFO -  * Restarting with stat
+2024-10-05 23:35:39,783 - WARNING -  * Debugger is active!
+2024-10-05 23:35:39,787 - INFO -  * Debugger PIN: 480-735-411
+2024-10-05 23:35:44,222 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-05 23:35:44,463 - INFO -  * Restarting with stat
+2024-10-05 23:35:46,075 - WARNING -  * Debugger is active!
+2024-10-05 23:35:46,080 - INFO -  * Debugger PIN: 480-735-411
+2024-10-05 23:36:37,516 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-05 23:36:37,713 - INFO -  * Restarting with stat
+2024-10-05 23:36:38,970 - WARNING -  * Debugger is active!
+2024-10-05 23:36:38,974 - INFO -  * Debugger PIN: 480-735-411
+2024-10-05 23:39:00,892 - DEBUG - Request payload: {'vehicle_id': '856b9a2c-6448-4663-aa68-9713fc4b1b55', 'service_type': 'Oil Change', 'kilometers_at_service': 15000, 'description': 'Changed engine oil and filter'}
+2024-10-05 23:39:01,328 - INFO - BEGIN (implicit)
+2024-10-05 23:39:01,330 - INFO - INSERT INTO vehicle_services (service_id, vehicle_id, service_date, service_type, kilometers_at_service, description) VALUES (%(service_id)s, %(vehicle_id)s, %(service_date)s, %(service_type)s, %(kilometers_at_service)s, %(description)s)
+2024-10-05 23:39:01,330 - INFO - [generated in 0.00042s] {'service_id': 'e61acb7e-8344-11ef-a1d7-923fc78ed5c1', 'vehicle_id': '856b9a2c-6448-4663-aa68-9713fc4b1b55', 'service_date': datetime.datetime(2024, 10, 5, 23, 39, 1, 203249, tzinfo=<DstTzInfo 'Asia/Kolkata' IST+5:30:00 STD>), 'service_type': 'Oil Change', 'kilometers_at_service': 15000, 'description': 'Changed engine oil and filter'}
+2024-10-05 23:39:01,391 - INFO - ROLLBACK
+2024-10-05 23:39:01,393 - ERROR - Error creating vehicle service: (psycopg2.errors.ForeignKeyViolation) insert or update on table "vehicle_services" violates foreign key constraint "vehicle_services_vehicle_id_fkey"
+DETAIL:  Key (vehicle_id)=(856b9a2c-6448-4663-aa68-9713fc4b1b55) is not present in table "purchased_vehicles".
+
+[SQL: INSERT INTO vehicle_services (service_id, vehicle_id, service_date, service_type, kilometers_at_service, description) VALUES (%(service_id)s, %(vehicle_id)s, %(service_date)s, %(service_type)s, %(kilometers_at_service)s, %(description)s)]
+[parameters: {'service_id': 'e61acb7e-8344-11ef-a1d7-923fc78ed5c1', 'vehicle_id': '856b9a2c-6448-4663-aa68-9713fc4b1b55', 'service_date': datetime.datetime(2024, 10, 5, 23, 39, 1, 203249, tzinfo=<DstTzInfo 'Asia/Kolkata' IST+5:30:00 STD>), 'service_type': 'Oil Change', 'kilometers_at_service': 15000, 'description': 'Changed engine oil and filter'}]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-10-05 23:39:01,393 - INFO - 127.0.0.1 - - [05/Oct/2024 23:39:01] "[35m[1mPOST /vehicle-service HTTP/1.1[0m" 500 -
+2024-10-05 23:40:47,547 - INFO - Received request with parameters: vehicle_model_id=None, vehicle_model=None, vehicle_year=None, engine_type=None, transmission=None, fuel_type=None, body_type=None, warranty_period_years=None, color=None, model_variant=None, tyre_company=None, tyre_size=None, start_type=None, sunroof_available=None, gear_type=None, vehicle_type=None
+2024-10-05 23:40:47,672 - INFO - BEGIN (implicit)
+2024-10-05 23:40:47,675 - INFO - SELECT vehicle_details.vehicle_model_id AS vehicle_details_vehicle_model_id, vehicle_details.vehicle_model AS vehicle_details_vehicle_model, vehicle_details.vehicle_year AS vehicle_details_vehicle_year, vehicle_details.engine_type AS vehicle_details_engine_type, vehicle_details.transmission AS vehicle_details_transmission, vehicle_details.fuel_type AS vehicle_details_fuel_type, vehicle_details.body_type AS vehicle_details_body_type, vehicle_details.warranty_period_years AS vehicle_details_warranty_period_years, vehicle_details.color AS vehicle_details_color, vehicle_details.model_variant AS vehicle_details_model_variant, vehicle_details.tyre_company AS vehicle_details_tyre_company, vehicle_details.tyre_size AS vehicle_details_tyre_size, vehicle_details.start_type AS vehicle_details_start_type, vehicle_details.sunroof_available AS vehicle_details_sunroof_available, vehicle_details.gear_type AS vehicle_details_gear_type, vehicle_details.vehicle_type AS vehicle_details_vehicle_type 
+FROM vehicle_details
+2024-10-05 23:40:47,676 - INFO - [generated in 0.00063s] {}
+2024-10-05 23:40:52,327 - INFO - Vehicle details retrieved successfully.
+2024-10-05 23:40:52,330 - INFO - End of search_vehicles function
+2024-10-05 23:40:52,331 - INFO - 127.0.0.1 - - [05/Oct/2024 23:40:52] "GET /search-vehicles HTTP/1.1" 200 -
+2024-10-05 23:41:27,615 - DEBUG - Request payload: {'vehicle_id': 'c6244e61-7669-11ef-86ed-923fc78ed5c1', 'service_type': 'Oil Change', 'kilometers_at_service': 15000, 'description': 'Changed engine oil and filter'}
+2024-10-05 23:41:27,615 - INFO - INSERT INTO vehicle_services (service_id, vehicle_id, service_date, service_type, kilometers_at_service, description) VALUES (%(service_id)s, %(vehicle_id)s, %(service_date)s, %(service_type)s, %(kilometers_at_service)s, %(description)s)
+2024-10-05 23:41:27,615 - INFO - [cached since 146.3s ago] {'service_id': '3d4c11f2-8345-11ef-a3a4-923fc78ed5c1', 'vehicle_id': 'c6244e61-7669-11ef-86ed-923fc78ed5c1', 'service_date': datetime.datetime(2024, 10, 5, 23, 41, 27, 615230, tzinfo=<DstTzInfo 'Asia/Kolkata' IST+5:30:00 STD>), 'service_type': 'Oil Change', 'kilometers_at_service': 15000, 'description': 'Changed engine oil and filter'}
+2024-10-05 23:41:27,620 - INFO - ROLLBACK
+2024-10-05 23:41:27,620 - ERROR - Error creating vehicle service: (psycopg2.errors.ForeignKeyViolation) insert or update on table "vehicle_services" violates foreign key constraint "vehicle_services_vehicle_id_fkey"
+DETAIL:  Key (vehicle_id)=(c6244e61-7669-11ef-86ed-923fc78ed5c1) is not present in table "purchased_vehicles".
+
+[SQL: INSERT INTO vehicle_services (service_id, vehicle_id, service_date, service_type, kilometers_at_service, description) VALUES (%(service_id)s, %(vehicle_id)s, %(service_date)s, %(service_type)s, %(kilometers_at_service)s, %(description)s)]
+[parameters: {'service_id': '3d4c11f2-8345-11ef-a3a4-923fc78ed5c1', 'vehicle_id': 'c6244e61-7669-11ef-86ed-923fc78ed5c1', 'service_date': datetime.datetime(2024, 10, 5, 23, 41, 27, 615230, tzinfo=<DstTzInfo 'Asia/Kolkata' IST+5:30:00 STD>), 'service_type': 'Oil Change', 'kilometers_at_service': 15000, 'description': 'Changed engine oil and filter'}]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-10-05 23:41:27,622 - INFO - 127.0.0.1 - - [05/Oct/2024 23:41:27] "[35m[1mPOST /vehicle-service HTTP/1.1[0m" 500 -
+2024-10-05 23:42:19,173 - DEBUG - Request payload: {'vehicle_id': '8f7a822e-76c3-11ef-8b81-923fc78ed5c1', 'service_type': 'Oil Change', 'kilometers_at_service': 15000, 'description': 'Changed engine oil and filter'}
+2024-10-05 23:42:19,364 - INFO - BEGIN (implicit)
+2024-10-05 23:42:19,366 - INFO - INSERT INTO vehicle_services (service_id, vehicle_id, service_date, service_type, kilometers_at_service, description) VALUES (%(service_id)s, %(vehicle_id)s, %(service_date)s, %(service_type)s, %(kilometers_at_service)s, %(description)s)
+2024-10-05 23:42:19,366 - INFO - [cached since 198s ago] {'service_id': '5c24a2e5-8345-11ef-9a71-923fc78ed5c1', 'vehicle_id': '8f7a822e-76c3-11ef-8b81-923fc78ed5c1', 'service_date': datetime.datetime(2024, 10, 5, 23, 42, 19, 173691, tzinfo=<DstTzInfo 'Asia/Kolkata' IST+5:30:00 STD>), 'service_type': 'Oil Change', 'kilometers_at_service': 15000, 'description': 'Changed engine oil and filter'}
+2024-10-05 23:42:19,375 - INFO - COMMIT
+2024-10-05 23:42:19,500 - INFO - BEGIN (implicit)
+2024-10-05 23:42:19,504 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services 
+WHERE vehicle_services.service_id = %(pk_1)s
+2024-10-05 23:42:19,506 - INFO - [generated in 0.00100s] {'pk_1': '5c24a2e5-8345-11ef-9a71-923fc78ed5c1'}
+2024-10-05 23:42:19,513 - INFO - Created new service record for vehicle_id: 8f7a822e-76c3-11ef-8b81-923fc78ed5c1
+2024-10-05 23:42:22,967 - INFO - ROLLBACK
+2024-10-05 23:42:22,968 - INFO - 127.0.0.1 - - [05/Oct/2024 23:42:22] "[35m[1mPOST /vehicle-service HTTP/1.1[0m" 201 -
+2024-10-05 23:43:39,803 - INFO - Received request with parameters: vehicle_model_id=None, vehicle_model=None, vehicle_year=None, engine_type=None, transmission=None, fuel_type=None, body_type=None, warranty_period_years=None, color=None, model_variant=None, tyre_company=None, tyre_size=None, start_type=None, sunroof_available=None, gear_type=None, vehicle_type=None
+2024-10-05 23:43:39,931 - INFO - BEGIN (implicit)
+2024-10-05 23:43:39,932 - INFO - SELECT vehicle_details.vehicle_model_id AS vehicle_details_vehicle_model_id, vehicle_details.vehicle_model AS vehicle_details_vehicle_model, vehicle_details.vehicle_year AS vehicle_details_vehicle_year, vehicle_details.engine_type AS vehicle_details_engine_type, vehicle_details.transmission AS vehicle_details_transmission, vehicle_details.fuel_type AS vehicle_details_fuel_type, vehicle_details.body_type AS vehicle_details_body_type, vehicle_details.warranty_period_years AS vehicle_details_warranty_period_years, vehicle_details.color AS vehicle_details_color, vehicle_details.model_variant AS vehicle_details_model_variant, vehicle_details.tyre_company AS vehicle_details_tyre_company, vehicle_details.tyre_size AS vehicle_details_tyre_size, vehicle_details.start_type AS vehicle_details_start_type, vehicle_details.sunroof_available AS vehicle_details_sunroof_available, vehicle_details.gear_type AS vehicle_details_gear_type, vehicle_details.vehicle_type AS vehicle_details_vehicle_type 
+FROM vehicle_details
+2024-10-05 23:43:39,932 - INFO - [cached since 172.3s ago] {}
+2024-10-05 23:43:43,804 - INFO - Vehicle details retrieved successfully.
+2024-10-05 23:43:43,807 - INFO - End of search_vehicles function
+2024-10-05 23:43:43,807 - INFO - 127.0.0.1 - - [05/Oct/2024 23:43:43] "GET /search-vehicles?vehicle_id=8f7a822e-76c3-11ef-8b81-923fc78ed5c1 HTTP/1.1" 200 -
+2024-10-05 23:44:00,989 - INFO - Received request with parameters: vehicle_model_id=None, vehicle_model=None, vehicle_year=None, engine_type=None, transmission=None, fuel_type=None, body_type=None, warranty_period_years=None, color=None, model_variant=None, tyre_company=None, tyre_size=None, start_type=None, sunroof_available=None, gear_type=None, vehicle_type=None
+2024-10-05 23:44:00,990 - INFO - SELECT vehicle_details.vehicle_model_id AS vehicle_details_vehicle_model_id, vehicle_details.vehicle_model AS vehicle_details_vehicle_model, vehicle_details.vehicle_year AS vehicle_details_vehicle_year, vehicle_details.engine_type AS vehicle_details_engine_type, vehicle_details.transmission AS vehicle_details_transmission, vehicle_details.fuel_type AS vehicle_details_fuel_type, vehicle_details.body_type AS vehicle_details_body_type, vehicle_details.warranty_period_years AS vehicle_details_warranty_period_years, vehicle_details.color AS vehicle_details_color, vehicle_details.model_variant AS vehicle_details_model_variant, vehicle_details.tyre_company AS vehicle_details_tyre_company, vehicle_details.tyre_size AS vehicle_details_tyre_size, vehicle_details.start_type AS vehicle_details_start_type, vehicle_details.sunroof_available AS vehicle_details_sunroof_available, vehicle_details.gear_type AS vehicle_details_gear_type, vehicle_details.vehicle_type AS vehicle_details_vehicle_type 
+FROM vehicle_details
+2024-10-05 23:44:00,990 - INFO - [cached since 193.3s ago] {}
+2024-10-05 23:44:04,807 - INFO - Vehicle details retrieved successfully.
+2024-10-05 23:44:04,809 - INFO - End of search_vehicles function
+2024-10-05 23:44:04,810 - INFO - 127.0.0.1 - - [05/Oct/2024 23:44:04] "GET /search-vehicles?vehicle__model_id=8f7a822e-76c3-11ef-8b81-923fc78ed5c1 HTTP/1.1" 200 -
+2024-10-05 23:44:49,898 - INFO - Received request with parameters: vehicle_model_id=8f7a822e-76c3-11ef-8b81-923fc78ed5c1, vehicle_model=None, vehicle_year=None, engine_type=None, transmission=None, fuel_type=None, body_type=None, warranty_period_years=None, color=None, model_variant=None, tyre_company=None, tyre_size=None, start_type=None, sunroof_available=None, gear_type=None, vehicle_type=None
+2024-10-05 23:44:49,901 - INFO - SELECT vehicle_details.vehicle_model_id AS vehicle_details_vehicle_model_id, vehicle_details.vehicle_model AS vehicle_details_vehicle_model, vehicle_details.vehicle_year AS vehicle_details_vehicle_year, vehicle_details.engine_type AS vehicle_details_engine_type, vehicle_details.transmission AS vehicle_details_transmission, vehicle_details.fuel_type AS vehicle_details_fuel_type, vehicle_details.body_type AS vehicle_details_body_type, vehicle_details.warranty_period_years AS vehicle_details_warranty_period_years, vehicle_details.color AS vehicle_details_color, vehicle_details.model_variant AS vehicle_details_model_variant, vehicle_details.tyre_company AS vehicle_details_tyre_company, vehicle_details.tyre_size AS vehicle_details_tyre_size, vehicle_details.start_type AS vehicle_details_start_type, vehicle_details.sunroof_available AS vehicle_details_sunroof_available, vehicle_details.gear_type AS vehicle_details_gear_type, vehicle_details.vehicle_type AS vehicle_details_vehicle_type 
+FROM vehicle_details 
+WHERE vehicle_details.vehicle_model_id = %(vehicle_model_id_1)s
+2024-10-05 23:44:49,901 - INFO - [generated in 0.00050s] {'vehicle_model_id_1': '8f7a822e-76c3-11ef-8b81-923fc78ed5c1'}
+2024-10-05 23:44:49,902 - ERROR - No vehicle details found with the specified criteria.
+2024-10-05 23:44:54,142 - INFO - End of search_vehicles function
+2024-10-05 23:44:54,143 - INFO - 127.0.0.1 - - [05/Oct/2024 23:44:54] "[33mGET /search-vehicles?vehicle_model_id=8f7a822e-76c3-11ef-8b81-923fc78ed5c1 HTTP/1.1[0m" 404 -
+2024-10-05 23:48:05,349 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\email_setup\\email_operations.py', reloading
+2024-10-05 23:48:05,662 - INFO -  * Restarting with stat
+2024-10-05 23:48:07,656 - WARNING -  * Debugger is active!
+2024-10-05 23:48:07,663 - INFO -  * Debugger PIN: 480-735-411
+2024-10-05 23:48:33,957 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-05 23:48:34,170 - INFO -  * Restarting with stat
+2024-10-05 23:48:35,724 - WARNING -  * Debugger is active!
+2024-10-05 23:48:35,727 - INFO -  * Debugger PIN: 480-735-411
+2024-10-05 23:48:35,767 - DEBUG - Request payload: {'vehicle_id': '8f7a822e-76c3-11ef-8b81-923fc78ed5c1', 'service_type': 'Oil Change', 'kilometers_at_service': 15000, 'description': 'Changed engine oil and filter'}
+2024-10-05 23:48:35,957 - INFO - BEGIN (implicit)
+2024-10-05 23:48:35,959 - INFO - INSERT INTO vehicle_services (service_id, vehicle_id, service_date, service_type, kilometers_at_service, description) VALUES (%(service_id)s, %(vehicle_id)s, %(service_date)s, %(service_type)s, %(kilometers_at_service)s, %(description)s)
+2024-10-05 23:48:35,959 - INFO - [generated in 0.00039s] {'service_id': '3c9c485a-8346-11ef-967f-923fc78ed5c1', 'vehicle_id': '8f7a822e-76c3-11ef-8b81-923fc78ed5c1', 'service_date': datetime.datetime(2024, 10, 5, 23, 48, 35, 851379, tzinfo=<DstTzInfo 'Asia/Kolkata' IST+5:30:00 STD>), 'service_type': 'Oil Change', 'kilometers_at_service': 15000, 'description': 'Changed engine oil and filter'}
+2024-10-05 23:48:35,966 - INFO - COMMIT
+2024-10-05 23:48:36,039 - INFO - BEGIN (implicit)
+2024-10-05 23:48:36,042 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services 
+WHERE vehicle_services.service_id = %(pk_1)s
+2024-10-05 23:48:36,042 - INFO - [generated in 0.00026s] {'pk_1': '3c9c485a-8346-11ef-967f-923fc78ed5c1'}
+2024-10-05 23:48:36,043 - INFO - Created new service record for vehicle_id: 8f7a822e-76c3-11ef-8b81-923fc78ed5c1
+2024-10-05 23:48:40,036 - INFO - ROLLBACK
+2024-10-05 23:48:40,040 - INFO - 127.0.0.1 - - [05/Oct/2024 23:48:40] "[35m[1mPOST /vehicle-service HTTP/1.1[0m" 201 -
+2024-10-05 23:50:41,426 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-05 23:50:41,627 - INFO -  * Restarting with stat
+2024-10-05 23:50:42,730 - WARNING -  * Debugger is active!
+2024-10-05 23:50:42,733 - INFO -  * Debugger PIN: 480-735-411
+2024-10-05 23:52:09,260 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-05 23:52:09,457 - INFO -  * Restarting with stat
+2024-10-05 23:52:10,619 - WARNING -  * Debugger is active!
+2024-10-05 23:52:10,625 - INFO -  * Debugger PIN: 480-735-411
+2024-10-05 23:52:12,375 - DEBUG - Request payload: {'vehicle_id': '8f7a822e-76c3-11ef-8b81-923fc78ed5c1', 'service_type': 'Oil Change', 'kilometers_at_service': 15000, 'description': 'Changed engine oil and filter'}
+2024-10-05 23:52:12,553 - INFO - BEGIN (implicit)
+2024-10-05 23:52:12,555 - INFO - INSERT INTO vehicle_services (service_id, vehicle_id, service_date, service_type, kilometers_at_service, description) VALUES (%(service_id)s, %(vehicle_id)s, %(service_date)s, %(service_type)s, %(kilometers_at_service)s, %(description)s)
+2024-10-05 23:52:12,555 - INFO - [generated in 0.00035s] {'service_id': 'bdb63467-8346-11ef-b4dc-923fc78ed5c1', 'vehicle_id': '8f7a822e-76c3-11ef-8b81-923fc78ed5c1', 'service_date': datetime.datetime(2024, 10, 5, 23, 52, 12, 461686, tzinfo=<DstTzInfo 'Asia/Kolkata' IST+5:30:00 STD>), 'service_type': 'Oil Change', 'kilometers_at_service': 15000, 'description': 'Changed engine oil and filter'}
+2024-10-05 23:52:12,562 - INFO - COMMIT
+2024-10-05 23:52:12,640 - INFO - BEGIN (implicit)
+2024-10-05 23:52:12,642 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services 
+WHERE vehicle_services.service_id = %(pk_1)s
+2024-10-05 23:52:12,643 - INFO - [generated in 0.00029s] {'pk_1': 'bdb63467-8346-11ef-b4dc-923fc78ed5c1'}
+2024-10-05 23:52:12,646 - INFO - Created new service record for vehicle_id: 8f7a822e-76c3-11ef-8b81-923fc78ed5c1
+2024-10-05 23:52:16,817 - INFO - ROLLBACK
+2024-10-05 23:52:16,819 - INFO - 127.0.0.1 - - [05/Oct/2024 23:52:16] "[35m[1mPOST /vehicle-service HTTP/1.1[0m" 201 -
+2024-10-05 23:53:57,961 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-05 23:53:58,210 - INFO -  * Restarting with stat
+2024-10-05 23:53:59,340 - WARNING -  * Debugger is active!
+2024-10-05 23:53:59,343 - INFO -  * Debugger PIN: 480-735-411
+2024-10-05 23:54:30,529 - DEBUG - Request payload: {'vehicle_id': '8f7a822e-76c3-11ef-8b81-923fc78ed5c1', 'service_type': 'Oil Change', 'service_date': '2024-10-30', 'kilometers_at_service': 15000, 'description': 'Changed engine oil and filter'}
+2024-10-05 23:54:30,888 - INFO - BEGIN (implicit)
+2024-10-05 23:54:30,892 - INFO - INSERT INTO vehicle_services (service_id, vehicle_id, service_date, service_type, kilometers_at_service, description) VALUES (%(service_id)s, %(vehicle_id)s, %(service_date)s, %(service_type)s, %(kilometers_at_service)s, %(description)s)
+2024-10-05 23:54:30,892 - INFO - [generated in 0.00070s] {'service_id': '102aabae-8347-11ef-b8e7-923fc78ed5c1', 'vehicle_id': '8f7a822e-76c3-11ef-8b81-923fc78ed5c1', 'service_date': datetime.datetime(2024, 10, 30, 0, 0, tzinfo=<DstTzInfo 'Asia/Kolkata' LMT+5:53:00 STD>), 'service_type': 'Oil Change', 'kilometers_at_service': 15000, 'description': 'Changed engine oil and filter'}
+2024-10-05 23:54:30,900 - INFO - COMMIT
+2024-10-05 23:54:31,020 - INFO - BEGIN (implicit)
+2024-10-05 23:54:31,024 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services 
+WHERE vehicle_services.service_id = %(pk_1)s
+2024-10-05 23:54:31,024 - INFO - [generated in 0.00045s] {'pk_1': '102aabae-8347-11ef-b8e7-923fc78ed5c1'}
+2024-10-05 23:54:31,029 - INFO - Created new service record for vehicle_id: 8f7a822e-76c3-11ef-8b81-923fc78ed5c1
+2024-10-05 23:54:34,954 - INFO - ROLLBACK
+2024-10-05 23:54:34,957 - INFO - 127.0.0.1 - - [05/Oct/2024 23:54:34] "[35m[1mPOST /vehicle-service HTTP/1.1[0m" 201 -
+2024-10-06 00:00:57,933 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\user_models\\tables.py', reloading
+2024-10-06 00:00:58,115 - INFO -  * Restarting with stat
+2024-10-06 00:00:59,269 - WARNING -  * Debugger is active!
+2024-10-06 00:00:59,272 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:01:03,178 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\user_models\\tables.py', reloading
+2024-10-06 00:01:03,342 - INFO -  * Restarting with stat
+2024-10-06 00:01:04,796 - WARNING -  * Debugger is active!
+2024-10-06 00:01:04,799 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:01:27,364 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:01:27,544 - INFO -  * Restarting with stat
+2024-10-06 00:01:28,761 - WARNING -  * Debugger is active!
+2024-10-06 00:01:28,763 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:01:30,301 - DEBUG - Request payload: {'vehicle_id': '8f7a822e-76c3-11ef-8b81-923fc78ed5c1', 'service_type': 'Oil Change', 'service_date': '2024-10-30', 'kilometers_at_service': 15000, 'description': 'Changed engine oil and filter'}
+2024-10-06 00:01:30,505 - INFO - BEGIN (implicit)
+2024-10-06 00:01:30,507 - INFO - INSERT INTO vehicle_services (service_id, vehicle_id, service_date, service_type, kilometers_at_service, description) VALUES (%(service_id)s, %(vehicle_id)s, %(service_date)s, %(service_type)s, %(kilometers_at_service)s, %(description)s)
+2024-10-06 00:01:30,507 - INFO - [generated in 0.00032s] {'service_id': '0a46db52-8348-11ef-ab91-923fc78ed5c1', 'vehicle_id': '8f7a822e-76c3-11ef-8b81-923fc78ed5c1', 'service_date': datetime.datetime(2024, 10, 30, 0, 0, tzinfo=<DstTzInfo 'Asia/Kolkata' LMT+5:53:00 STD>), 'service_type': 'Oil Change', 'kilometers_at_service': 15000, 'description': 'Changed engine oil and filter'}
+2024-10-06 00:01:30,512 - INFO - COMMIT
+2024-10-06 00:01:30,592 - INFO - BEGIN (implicit)
+2024-10-06 00:01:30,595 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services 
+WHERE vehicle_services.service_id = %(pk_1)s
+2024-10-06 00:01:30,595 - INFO - [generated in 0.00023s] {'pk_1': '0a46db52-8348-11ef-ab91-923fc78ed5c1'}
+2024-10-06 00:01:30,598 - INFO - Created new service record for vehicle_id: 8f7a822e-76c3-11ef-8b81-923fc78ed5c1
+2024-10-06 00:01:34,691 - INFO - ROLLBACK
+2024-10-06 00:01:34,695 - INFO - 127.0.0.1 - - [06/Oct/2024 00:01:34] "[35m[1mPOST /vehicle-service HTTP/1.1[0m" 201 -
+2024-10-06 00:03:09,326 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:03:09,549 - INFO -  * Restarting with stat
+2024-10-06 00:03:10,912 - WARNING -  * Debugger is active!
+2024-10-06 00:03:10,916 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:07:50,082 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:07:50,230 - INFO -  * Restarting with stat
+2024-10-06 00:07:51,700 - WARNING -  * Debugger is active!
+2024-10-06 00:07:51,706 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:08:30,909 - INFO - BEGIN (implicit)
+2024-10-06 00:08:30,911 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services
+2024-10-06 00:08:30,911 - INFO - [generated in 0.00020s] {}
+2024-10-06 00:08:30,924 - INFO - Fetched all vehicle service records
+2024-10-06 00:08:30,925 - INFO - ROLLBACK
+2024-10-06 00:08:30,942 - INFO - 127.0.0.1 - - [06/Oct/2024 00:08:30] "[35m[1mGET /get-vehicle-service HTTP/1.1[0m" 500 -
+2024-10-06 00:09:42,527 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:09:42,697 - INFO -  * Restarting with stat
+2024-10-06 00:09:43,803 - WARNING -  * Debugger is active!
+2024-10-06 00:09:43,807 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:09:43,923 - INFO - BEGIN (implicit)
+2024-10-06 00:09:43,925 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services
+2024-10-06 00:09:43,925 - INFO - [generated in 0.00043s] {}
+2024-10-06 00:09:43,929 - INFO - Fetched all service records
+2024-10-06 00:09:43,930 - INFO - ROLLBACK
+2024-10-06 00:09:43,938 - INFO - 127.0.0.1 - - [06/Oct/2024 00:09:43] "[35m[1mGET /get-vehicle-service?service_id HTTP/1.1[0m" 500 -
+2024-10-06 00:09:49,322 - INFO - BEGIN (implicit)
+2024-10-06 00:09:49,323 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services
+2024-10-06 00:09:49,323 - INFO - [cached since 5.398s ago] {}
+2024-10-06 00:09:49,326 - INFO - Fetched all service records
+2024-10-06 00:09:49,326 - INFO - ROLLBACK
+2024-10-06 00:09:49,333 - INFO - 127.0.0.1 - - [06/Oct/2024 00:09:49] "[35m[1mGET /get-vehicle-service HTTP/1.1[0m" 500 -
+2024-10-06 00:11:17,755 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:11:17,991 - INFO -  * Restarting with stat
+2024-10-06 00:11:19,253 - WARNING -  * Debugger is active!
+2024-10-06 00:11:19,257 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:11:19,400 - INFO - BEGIN (implicit)
+2024-10-06 00:11:19,402 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services
+2024-10-06 00:11:19,402 - INFO - [generated in 0.00023s] {}
+2024-10-06 00:11:19,405 - INFO - Fetched all service records
+2024-10-06 00:11:23,741 - INFO - ROLLBACK
+2024-10-06 00:11:23,743 - INFO - 127.0.0.1 - - [06/Oct/2024 00:11:23] "GET /get-vehicle-service HTTP/1.1" 200 -
+2024-10-06 00:13:07,227 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\email_setup\\email_operations.py', reloading
+2024-10-06 00:13:07,419 - INFO -  * Restarting with stat
+2024-10-06 00:13:09,058 - WARNING -  * Debugger is active!
+2024-10-06 00:13:09,062 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:13:09,205 - INFO - BEGIN (implicit)
+2024-10-06 00:13:09,208 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services
+2024-10-06 00:13:09,208 - INFO - [generated in 0.00036s] {}
+2024-10-06 00:13:09,213 - INFO - Fetched all service records
+2024-10-06 00:13:09,213 - INFO - ROLLBACK
+2024-10-06 00:13:09,229 - INFO - 127.0.0.1 - - [06/Oct/2024 00:13:09] "[35m[1mGET /get-vehicle-service HTTP/1.1[0m" 500 -
+2024-10-06 00:14:06,401 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\email_setup\\email_operations.py', reloading
+2024-10-06 00:14:06,680 - INFO -  * Restarting with stat
+2024-10-06 00:14:08,157 - WARNING -  * Debugger is active!
+2024-10-06 00:14:08,161 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:14:47,766 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\email_setup\\email_operations.py', reloading
+2024-10-06 00:14:47,916 - INFO -  * Restarting with stat
+2024-10-06 00:14:48,998 - WARNING -  * Debugger is active!
+2024-10-06 00:14:49,004 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:14:49,532 - INFO - BEGIN (implicit)
+2024-10-06 00:14:49,534 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services
+2024-10-06 00:14:49,534 - INFO - [generated in 0.00025s] {}
+2024-10-06 00:14:49,537 - INFO - Fetched all service records
+2024-10-06 00:14:53,698 - INFO - ROLLBACK
+2024-10-06 00:14:53,701 - INFO - 127.0.0.1 - - [06/Oct/2024 00:14:53] "GET /get-vehicle-service HTTP/1.1" 200 -
+2024-10-06 00:16:42,157 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\email_setup\\email_operations.py', reloading
+2024-10-06 00:16:42,351 - INFO -  * Restarting with stat
+2024-10-06 00:16:43,494 - WARNING -  * Debugger is active!
+2024-10-06 00:16:43,499 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:16:43,759 - INFO - BEGIN (implicit)
+2024-10-06 00:16:43,761 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services
+2024-10-06 00:16:43,761 - INFO - [generated in 0.00027s] {}
+2024-10-06 00:16:43,765 - INFO - Fetched all service records
+2024-10-06 00:16:47,350 - INFO - ROLLBACK
+2024-10-06 00:16:47,351 - INFO - 127.0.0.1 - - [06/Oct/2024 00:16:47] "GET /get-vehicle-service HTTP/1.1" 200 -
+2024-10-06 00:17:10,745 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\email_setup\\email_operations.py', reloading
+2024-10-06 00:17:10,876 - INFO -  * Restarting with stat
+2024-10-06 00:17:12,024 - WARNING -  * Debugger is active!
+2024-10-06 00:17:12,028 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:17:12,145 - INFO - BEGIN (implicit)
+2024-10-06 00:17:12,148 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services
+2024-10-06 00:17:12,148 - INFO - [generated in 0.00027s] {}
+2024-10-06 00:17:12,150 - INFO - Fetched all service records
+2024-10-06 00:17:15,833 - INFO - ROLLBACK
+2024-10-06 00:17:15,836 - INFO - 127.0.0.1 - - [06/Oct/2024 00:17:15] "GET /get-vehicle-service HTTP/1.1" 200 -
+2024-10-06 00:17:59,488 - INFO - BEGIN (implicit)
+2024-10-06 00:17:59,490 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services 
+WHERE vehicle_services.service_id = %(service_id_1)s 
+ LIMIT %(param_1)s
+2024-10-06 00:17:59,490 - INFO - [generated in 0.00050s] {'service_id_1': '8f89b218-76c3-11ef-a32a-923fc78ed5c1', 'param_1': 1}
+2024-10-06 00:17:59,499 - INFO - Fetched service record with service_id: 8f89b218-76c3-11ef-a32a-923fc78ed5c1
+2024-10-06 00:18:03,196 - INFO - ROLLBACK
+2024-10-06 00:18:03,197 - INFO - 127.0.0.1 - - [06/Oct/2024 00:18:03] "GET /get-vehicle-service?service_id=8f89b218-76c3-11ef-a32a-923fc78ed5c1 HTTP/1.1" 200 -
+2024-10-06 00:19:20,744 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:19:20,897 - INFO -  * Restarting with stat
+2024-10-06 00:19:21,828 - WARNING -  * Debugger is active!
+2024-10-06 00:19:21,831 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:21:26,360 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:21:26,515 - INFO -  * Restarting with stat
+2024-10-06 00:21:27,413 - WARNING -  * Debugger is active!
+2024-10-06 00:21:27,417 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:24:43,359 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:24:43,576 - INFO -  * Restarting with stat
+2024-10-06 00:24:44,604 - WARNING -  * Debugger is active!
+2024-10-06 00:24:44,608 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:25:35,174 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:25:35,290 - INFO -  * Restarting with stat
+2024-10-06 00:25:36,182 - WARNING -  * Debugger is active!
+2024-10-06 00:25:36,185 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:26:53,356 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:26:53,496 - INFO -  * Restarting with stat
+2024-10-06 00:26:54,362 - WARNING -  * Debugger is active!
+2024-10-06 00:26:54,365 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:27:16,094 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:27:16,203 - INFO -  * Restarting with stat
+2024-10-06 00:27:17,090 - WARNING -  * Debugger is active!
+2024-10-06 00:27:17,093 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:28:23,207 - INFO - 127.0.0.1 - - [06/Oct/2024 00:28:23] "[33mPUT /update-vehicle-service HTTP/1.1[0m" 404 -
+2024-10-06 00:28:38,568 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:28:38,831 - INFO -  * Restarting with stat
+2024-10-06 00:28:40,213 - WARNING -  * Debugger is active!
+2024-10-06 00:28:40,217 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:28:40,272 - DEBUG - Request payload: {'service_id': '102aabae-8347-11ef-b8e7-923fc78ed5c1', 'service_type': 'Tire Replacement', 'service_date': '2024-11-01', 'kilometers_at_service': 16000.0, 'description': 'Replaced tires and aligned wheels'}
+2024-10-06 00:28:40,383 - INFO - BEGIN (implicit)
+2024-10-06 00:28:40,386 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services 
+WHERE vehicle_services.service_id = %(service_id_1)s 
+ LIMIT %(param_1)s
+2024-10-06 00:28:40,387 - INFO - [generated in 0.00031s] {'service_id_1': '102aabae-8347-11ef-b8e7-923fc78ed5c1', 'param_1': 1}
+2024-10-06 00:28:40,393 - INFO - UPDATE vehicle_services SET service_date=%(service_date)s, service_type=%(service_type)s, kilometers_at_service=%(kilometers_at_service)s, description=%(description)s WHERE vehicle_services.service_id = %(vehicle_services_service_id)s
+2024-10-06 00:28:40,393 - INFO - [generated in 0.00030s] {'service_date': '2024-11-01', 'service_type': 'Tire Replacement', 'kilometers_at_service': 16000.0, 'description': 'Replaced tires and aligned wheels', 'vehicle_services_service_id': UUID('102aabae-8347-11ef-b8e7-923fc78ed5c1')}
+2024-10-06 00:28:40,409 - INFO - COMMIT
+2024-10-06 00:28:40,411 - INFO - Updated service record with service_id: 102aabae-8347-11ef-b8e7-923fc78ed5c1
+2024-10-06 00:28:40,479 - INFO - BEGIN (implicit)
+2024-10-06 00:28:40,481 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services 
+WHERE vehicle_services.service_id = %(pk_1)s
+2024-10-06 00:28:40,481 - INFO - [generated in 0.00019s] {'pk_1': UUID('102aabae-8347-11ef-b8e7-923fc78ed5c1')}
+2024-10-06 00:28:44,675 - INFO - ROLLBACK
+2024-10-06 00:28:44,676 - INFO - 127.0.0.1 - - [06/Oct/2024 00:28:44] "PUT /update-vehicle-service HTTP/1.1" 200 -
+2024-10-06 00:29:48,608 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:29:48,754 - INFO -  * Restarting with stat
+2024-10-06 00:29:49,834 - WARNING -  * Debugger is active!
+2024-10-06 00:29:49,840 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:39:13,561 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:39:13,710 - INFO -  * Restarting with stat
+2024-10-06 00:39:14,724 - WARNING -  * Debugger is active!
+2024-10-06 00:39:14,727 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:42:38,780 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\email_setup\\email_operations.py', reloading
+2024-10-06 00:42:38,935 - INFO -  * Restarting with stat
+2024-10-06 00:42:39,925 - WARNING -  * Debugger is active!
+2024-10-06 00:42:39,928 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:43:49,137 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:43:49,248 - INFO -  * Restarting with stat
+2024-10-06 00:43:50,196 - WARNING -  * Debugger is active!
+2024-10-06 00:43:50,199 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:44:28,547 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:44:28,784 - INFO -  * Restarting with stat
+2024-10-06 00:44:30,044 - WARNING -  * Debugger is active!
+2024-10-06 00:44:30,048 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:45:14,559 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:45:14,733 - INFO -  * Restarting with stat
+2024-10-06 00:45:15,831 - WARNING -  * Debugger is active!
+2024-10-06 00:45:15,839 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:45:44,058 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:45:44,182 - INFO -  * Restarting with stat
+2024-10-06 00:45:45,216 - WARNING -  * Debugger is active!
+2024-10-06 00:45:45,219 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:48:16,790 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:48:16,915 - INFO -  * Restarting with stat
+2024-10-06 00:48:17,856 - WARNING -  * Debugger is active!
+2024-10-06 00:48:17,859 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:49:05,676 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:49:05,786 - INFO -  * Restarting with stat
+2024-10-06 00:49:06,636 - WARNING -  * Debugger is active!
+2024-10-06 00:49:06,639 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:50:27,626 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:50:27,821 - INFO -  * Restarting with stat
+2024-10-06 00:50:28,759 - WARNING -  * Debugger is active!
+2024-10-06 00:50:28,762 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:50:42,026 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:50:42,162 - INFO -  * Restarting with stat
+2024-10-06 00:50:43,195 - WARNING -  * Debugger is active!
+2024-10-06 00:50:43,198 - INFO -  * Debugger PIN: 480-735-411
+2024-10-06 00:51:25,517 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-06 00:51:25,696 - INFO -  * Restarting with stat
+2024-10-06 00:51:26,821 - WARNING -  * Debugger is active!
+2024-10-06 00:51:26,823 - INFO -  * Debugger PIN: 480-735-411

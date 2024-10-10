@@ -25,7 +25,8 @@ from email_setup.email_operations import (  # Email notifications
     generate_vehicle_details_email_body, generate_detailed_vehicle_email, send_deletion_email,
     generate_user_vehicle_purchase_email, generate_team_vehicle_purchase_email,
     generate_error_email, generate_success_email, notify_vehicle_update_success, generate_failure_email,
-    send_vehicle_operation_email, send_tax_operation_email
+    send_vehicle_operation_email, send_tax_operation_email, send_vehicle_service_email, send_service_email_notification,
+    send_email_update_notification, send_error_email
 )
 
 # Logging Utility
@@ -2380,6 +2381,233 @@ def delete_tax():
         session.rollback()
         error_message = f"Error deleting tax record: {str(e)}"
         log_error(error_message)
+        return jsonify({"error": error_message}), 500
+
+    finally:
+        session.close()
+
+
+# --------------------------------------------- VEHICLE SERVICES TABLE ------------------------------------------------------------
+
+
+@app.route('/vehicle-service', methods=["POST"])
+def create_vehicle_service():
+    """
+    API to create a new vehicle service record.
+    """
+    try:
+        payload = request.get_json()
+        log_debug(f"Request payload: {payload}")
+
+        service_date_str = payload.get('service_date')
+
+        if service_date_str:
+            try:
+                service_date = datetime.strptime(service_date_str, '%Y-%m-%d').replace(
+                    tzinfo=pytz.timezone('Asia/Kolkata'))
+            except ValueError:
+                return jsonify({"error": "Invalid date format. Please use 'yyyy-mm-dd' format."}), 400
+        else:
+            service_date = datetime.now(pytz.timezone('Asia/Kolkata'))
+
+        current_time = datetime.now(pytz.timezone('Asia/Kolkata'))
+        if service_date < current_time:
+            return jsonify({
+                "error": "Service date cannot be in the past. Please provide a future or current date."
+            }), 400
+
+        new_service = VehicleServices(
+            vehicle_id=payload['vehicle_id'],
+            service_type=payload['service_type'],
+            service_date=service_date,
+            kilometers_at_service=payload.get('kilometers_at_service'),
+            description=payload.get('description')
+        )
+
+        session.add(new_service)
+        session.commit()
+
+        log_info(f"Created new service record for vehicle_id: {new_service.vehicle_id}")
+        response = new_service.serialize_to_dict()
+
+        send_vehicle_service_email(RECEIVER_EMAIL, response)
+
+        return jsonify({
+            "message": "Vehicle service created successfully",
+            "service_record": response
+        }), 201
+
+    except SQLAlchemyError as e:
+        session.rollback()
+        error_message = f"Error creating vehicle service: {str(e)}"
+        log_error(error_message)
+        send_error_email(RECEIVER_EMAIL, error_message, "create_vehicle_service")
+
+        return jsonify({"error": error_message}), 500
+
+    finally:
+        session.close()
+
+
+@app.route('/get-vehicle-service', methods=["GET"])
+def get_vehicle_service():
+    """
+    API to fetch vehicle service records.
+    If service_id is provided, it fetches that specific service.
+    If no service_id is provided, it fetches all service records.
+    """
+    try:
+        service_id = request.args.get('service_id')
+
+        if service_id:
+            service_record = session.query(VehicleServices).filter_by(service_id=service_id).first()
+
+            if not service_record:
+                error_message = f"Service record not found for service_id: {service_id}"
+                log_error(error_message)
+                send_error_email(RECEIVER_EMAIL, error_message, "get_vehicle_service")
+                return jsonify({"error": error_message}), 404
+
+            log_info(f"Fetched service record with service_id: {service_id}")
+            response = service_record.serialize_to_dict()
+
+            send_service_email_notification(service_record, total_count=None)
+            return jsonify({
+                "message": "Service record fetched successfully",
+                "service_record": response
+            }), 200
+        else:
+            all_service_records = session.query(VehicleServices).all()
+
+            if not all_service_records:
+                error_message = "No service records found."
+                log_error(error_message)
+                send_error_email(RECEIVER_EMAIL, error_message, "get_vehicle_service")
+                return jsonify({"error": error_message}), 404
+
+            log_info("Fetched all service records")
+            total_records = len(all_service_records)
+            serialized_records = [record.serialize_to_dict() for record in all_service_records]
+
+            send_service_email_notification(serialized_records, total_count=total_records)
+
+            return jsonify({
+                "message": "All service records fetched successfully",
+                "total_records": total_records,
+                "service_records": serialized_records
+            }), 200
+
+    except SQLAlchemyError as e:
+        error_message = f"Error fetching vehicle service: {str(e)}"
+        log_error(error_message)
+        send_error_email(RECEIVER_EMAIL, error_message, "get_vehicle_service")
+        return jsonify({"error": error_message}), 500
+
+    finally:
+        session.close()
+
+
+@app.route('/update-vehicle-service', methods=["PUT"])
+def update_vehicle_service():
+    """
+    API to update an existing vehicle service record by service_id.
+    """
+    try:
+        payload = request.get_json()
+        log_debug(f"Request payload: {payload}")
+
+        service_id = payload.get('service_id')
+
+        if not service_id:
+            error_message = "Service ID must be provided in the request body."
+            log_error(error_message)
+            send_error_email(RECEIVER_EMAIL, error_message, "update_vehicle_service")
+            return jsonify({"error": error_message}), 400
+
+        service_record = session.query(VehicleServices).filter_by(service_id=service_id).first()
+
+        if not service_record:
+            error_message = f"Service record not found for service_id: {service_id}"
+            log_error(error_message)
+            send_error_email(RECEIVER_EMAIL, error_message, "update_vehicle_service")
+            return jsonify({"error": error_message}), 404
+
+        service_record.service_type = payload.get('service_type', service_record.service_type)
+        service_record.service_date = payload.get('service_date', service_record.service_date)
+        service_record.kilometers_at_service = payload.get('kilometers_at_service',
+                                                           service_record.kilometers_at_service)
+        service_record.description = payload.get('description', service_record.description)
+
+        session.commit()
+
+        log_info(f"Updated service record with service_id: {service_id}")
+        response = service_record.serialize_to_dict()
+
+        send_email_update_notification([service_record], total_count=None)
+
+        return jsonify({
+            "message": "Vehicle service updated successfully",
+            "service_record": response
+        }), 200
+
+    except SQLAlchemyError as e:
+        session.rollback()
+        error_message = f"Error updating vehicle service: {str(e)}"
+        log_error(error_message)
+        send_error_email(RECEIVER_EMAIL, error_message, "update_vehicle_service")
+
+        return jsonify({"error": error_message}), 500
+
+    finally:
+        session.close()
+
+
+@app.route('/vehicle-service', methods=["DELETE"])
+def delete_vehicle_service():
+    """
+    API to delete a vehicle service record by service_id.
+    """
+    try:
+        # Get service_id from query parameters
+        service_id = request.args.get('service_id')
+
+        if not service_id:
+            error_message = "Service ID must be provided in the query parameters."
+            log_error(error_message)
+            send_error_email(RECEIVER_EMAIL, error_message, "delete_vehicle_service")
+            return jsonify({"error": error_message}), 400
+
+        # Fetch the service record
+        service_record = session.query(VehicleServices).filter_by(service_id=service_id).first()
+
+        if not service_record:
+            error_message = f"Service record not found for service_id: {service_id}"
+            log_error(error_message)
+            send_error_email(RECEIVER_EMAIL, error_message, "delete_vehicle_service")
+            return jsonify({"error": error_message}), 404
+
+        # Capture the service details before deletion
+        deleted_record_details = service_record.serialize_to_dict()
+
+        # Delete the record
+        session.delete(service_record)
+        session.commit()
+
+        log_info(f"Deleted service record with service_id: {service_id}")
+
+        send_email_update_notification(deleted_record_details, total_count=None)
+
+        return jsonify({
+            "message": f"Service record with service_id: {service_id} deleted successfully",
+            "deleted_record_details": deleted_record_details
+        }), 200
+
+    except SQLAlchemyError as e:
+        session.rollback()
+        error_message = f"Error deleting vehicle service: {str(e)}"
+        log_error(error_message)
+        send_error_email(RECEIVER_EMAIL, error_message, "delete_vehicle_service")
+
         return jsonify({"error": error_message}), 500
 
     finally:

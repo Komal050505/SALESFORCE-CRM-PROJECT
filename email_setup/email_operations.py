@@ -30,6 +30,23 @@ from email_setup.email_config import (
 from logging_package.logging_utility import log_info, log_error
 
 
+def send_email_otp(receiver_email, otp):
+    """Send OTP to the user's email."""
+    sender_email = "your-email@gmail.com"
+    sender_password = "your-app-password"  # Generate this from your Gmail account
+    subject = "Your OTP"
+    body = f"Your OTP is: {otp}"
+
+    msg = MIMEText(body)
+    msg["Subject"] = subject
+    msg["From"] = sender_email
+    msg["To"] = receiver_email
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, receiver_email, msg.as_string())
+
+
 def send_email(too_email, subject, body):
     """
     This function is used to send emails whenever there are changes in CRUD operations
@@ -761,3 +778,120 @@ def send_tax_operation_email(email_type, tax_info, stage, total_insurances=None,
 
     # Send the email using your existing send_email function
     send_email(RECEIVER_EMAIL, email_subject, email_body)
+
+
+def send_vehicle_service_email(receiver_email, service_details):
+    """
+    Sends an email with detailed vehicle service information.
+
+    :param receiver_email: str, the email address of the receiver.
+    :param service_details: dict, the details of the vehicle service.
+    """
+    subject = "New Vehicle Service Created"
+
+    # Create detailed email content
+    body = (
+        f"Vehicle Service Created Successfully\n"
+        f"-------------------------------------\n"
+        f"Service ID: {service_details['service_id']}\n"
+        f"Vehicle ID: {service_details['vehicle_id']}\n"
+        f"Service Type: {service_details['service_type']}\n"
+        f"Service Date: {service_details['service_date']}\n"
+        f"Kilometers at Service: {service_details['kilometers_at_service']} km\n"
+        f"Description: {service_details['description']}\n"
+    )
+
+    # Call your existing send_email function with the subject and body
+    send_email(receiver_email, subject, body)
+
+
+def send_service_email_notification(records, total_count=None):
+    """
+    Send an email notification with details about service records.
+    If total_count is provided, include it in the email for all records.
+    """
+    if total_count:
+        # Email for all records
+        email_subject = f"Fetched {total_count} Vehicle Service Records"
+        email_body = f"Total vehicle service records: {total_count}\n\n"
+
+        for idx, rec in enumerate(records, 1):
+            email_body += (f"Record {idx}:\n\n"
+                           f"Service ID          : {rec['service_id']}\n"
+                           f"Vehicle ID          : {rec['vehicle_id']}\n"
+                           f"Service Date        : {rec['service_date']}\n"
+                           f"Service Type        : {rec['service_type']}\n"
+                           f"Kilometers at Service: {rec['kilometers_at_service']}\n"
+                           f"Description         : {rec['description']}\n\n")
+
+    else:
+        # Email for a single record
+        email_subject = f"Fetched Vehicle Service Record for Service ID: {records.service_id}"
+        email_body = (f"Service Record Details:\n\n"
+                      f"Service ID          : {records.service_id}\n"
+                      f"Vehicle ID          : {records.vehicle_id}\n"
+                      f"Service Date        : {records.service_date.strftime('%Y-%m-%d')}\n"
+                      f"Service Type        : {records.service_type}\n"
+                      f"Kilometers at Service: {records.kilometers_at_service}\n"
+                      f"Description         : {records.description}\n")
+
+    send_email(RECEIVER_EMAIL, email_subject, email_body)
+
+
+def send_email_update_notification(records, total_count=None):
+    """
+    Send an email notification with details about service records.
+    If total_count is provided, include it in the email for all records.
+    """
+    if total_count:
+        # Email for all records
+        email_subject = f"Fetched {total_count} Vehicle Service Records"
+        email_body = f"Total vehicle service records: {total_count}\n\n"
+
+        for idx, rec in enumerate(records, 1):
+            email_body += (f"Record {idx}:\n\n"
+                           f"Service ID          : {rec['service_id']}\n"
+                           f"Vehicle ID          : {rec['vehicle_id']}\n"
+                           f"Service Date        : {rec['service_date'].strftime('%Y-%m-%d')}\n"
+                           f"Service Type        : {rec['service_type']}\n"
+                           f"Kilometers at Service: {rec['kilometers_at_service']}\n"
+                           f"Description         : {rec['description']}\n\n")
+
+    else:
+        # Email for a single record
+        email_subject = f"Updated Vehicle Service Record for Service ID: {records[0].service_id}"
+        email_body = (f"Service Record Details:\n\n"
+                      f"Service ID          : {records[0].service_id}\n"
+                      f"Vehicle ID          : {records[0].vehicle_id}\n"
+                      f"Service Date        : {records[0].service_date.strftime('%Y-%m-%d')}\n"
+                      f"Service Type        : {records[0].service_type}\n"
+                      f"Kilometers at Service: {records[0].kilometers_at_service}\n"
+                      f"Description         : {records[0].description}\n")
+
+    send_email(RECEIVER_EMAIL, email_subject, email_body)
+
+
+def send_error_email(receiver_email, error_message, api_name, additional_info=None):
+    """
+    Sends an email notification for errors occurred in APIs.
+
+    Parameters:
+    - receiver_email (str): Email address to send the notification to.
+    - error_message (str): The error message to be sent.
+    - api_name (str): The name of the API where the error occurred.
+    - additional_info (str, optional): Any additional information to be included in the email.
+
+    Returns:
+    None
+    """
+    subject = f"Error Notification from {api_name} API"
+
+    body = f"Error Notification\n\n" \
+           f"API: {api_name}\n" \
+           f"Error Message: {error_message}\n"
+
+    if additional_info:
+        body += f"Additional Info: {additional_info}\n"
+
+    # Use your email sending function here
+    send_email(receiver_email, subject, body)
