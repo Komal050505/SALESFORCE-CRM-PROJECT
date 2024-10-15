@@ -5,6 +5,7 @@ This module contains api's for Account table operations, Dealer table operations
 # Standard library imports
 import uuid  # For generating universally unique identifiers (UUIDs)
 from datetime import datetime  # For date and time manipulations
+import random
 
 # Third-Party/External Library Imports
 import pytz  # For timezone handling and conversions
@@ -15,7 +16,6 @@ from sqlalchemy.exc import SQLAlchemyError  # For handling SQLAlchemy database e
 # Database Session
 from db_connections.configurations import session  # For managing database session connections
 from email_setup.email_config import RECEIVER_EMAIL
-
 # Email Operations
 from email_setup.email_operations import (  # Email notifications
     notify_success,
@@ -26,21 +26,18 @@ from email_setup.email_operations import (  # Email notifications
     generate_user_vehicle_purchase_email, generate_team_vehicle_purchase_email,
     generate_error_email, generate_success_email, notify_vehicle_update_success, generate_failure_email,
     send_vehicle_operation_email, send_tax_operation_email, send_vehicle_service_email, send_service_email_notification,
-    send_email_update_notification, send_error_email
+    send_email_update_notification, send_error_email, send_email_otp
 )
-
 # Logging Utility
 from logging_package.logging_utility import (  # Logging information, errors, and debugging
     log_info,
     log_error,
     log_debug
 )
-
 # User Models
 from user_models.tables import Account, Dealer, Opportunity, \
-    VehicleDetails, PurchasedVehicles, Insurance, \
-    VehicleServices, Taxes  # Database models for account, dealer, and opportunity
-
+    VehicleDetails, PurchasedVehicles, \
+    VehicleServices, Taxes, OTPStore  # Database models for account, dealer, and opportunity
 # Utility Functions
 from utilities.reusables import (  # Reusable utility functions for validations and conversions
     get_currency_conversion,
@@ -48,19 +45,47 @@ from utilities.reusables import (  # Reusable utility functions for validations 
     validate_stage,
     validate_probability,
     parse_date,
-    validate_positive_number, schedule_next_service, calculate_taxes
+    validate_positive_number, schedule_next_service, calculate_taxes, otp_required
 )
 
 # Create Flask app instance
 app = Flask(__name__)
 
 
+# ---------------------------------------- OTP GENERATOR API -----------------------------------------------------------
+@app.route('/generate-otp', methods=['POST'])
+def generate_otp():
+    """
+    Generates an OTP and sends it to the user's email, storing the OTP in PostgreSQL.
+    """
+    payload = request.get_json()
+    if not payload or 'email' not in payload:
+        return jsonify({"error": "Email is required to generate OTP."}), 400
+
+    email = payload['email']
+    otp = random.randint(100000, 999999)  # Generate a 6-digit OTP
+
+    # Get current timestamp
+    timestamp = datetime.now()
+
+    # Store OTP in the database
+    new_otp = OTPStore(email=email, otp=str(otp), timestamp=timestamp)
+    session.add(new_otp)
+    session.commit()
+
+    # Send OTP via email
+    send_email_otp(email, otp)
+
+    return jsonify({"message": f"OTP sent to {email}",
+                    "otp": f"OTP is {otp}"}), 200
+
+
 # ----------------------------------------------- ACCOUNT TABLE ------------------------------------------------
 @app.route('/add-account', methods=['POST'])
+@otp_required  # Applies the OTP decorator
 def add_account():
     """
-    Adds new accounts to account table
-    :return: JSON response with email notifications
+    Adds new accounts to the account table after OTP verification.
     """
     log_info("Received request to add new account")
     try:
@@ -70,8 +95,10 @@ def add_account():
         if not payload or 'account_id' not in payload or 'account_name' not in payload:
             error_message = "Invalid input data. 'account_id' and 'account_name' are required."
             log_error(error_message)
-            notify_failure("Add Account Failed", error_message)
             return jsonify({"error": error_message}), 400
+
+        ist_timezone = pytz.timezone('Asia/Kolkata')
+        current_time_ist = datetime.now(ist_timezone).strftime("%Y-%m-%d %H:%M:%S")
 
         new_account = Account(
             account_id=payload['account_id'],
@@ -83,24 +110,38 @@ def add_account():
         log_info(f"Account added successfully: {payload['account_id']}")
 
         success_message = (f"Account added successfully.\nAccount ID: {payload['account_id']}\n"
-                           f"Account Name: {payload['account_name']}")
+                           f"Account Name: {payload['account_name']}\n"
+                           f"Timestamp (IST): {current_time_ist}")
         notify_success("Add Account Successful", success_message)
 
-        return jsonify({"message": "Account added successfully", "account_id": payload['account_id'],
-                        "account_name": payload['account_name']}), 201
+        otp_record = session.query(OTPStore).filter_by(email=payload['email']).first()
+        if otp_record:
+            session.delete(otp_record)
+            session.commit()
+            log_info(f"OTP cleared for {payload['email']} after successful account addition.")
+
+        return jsonify({
+            "message": "Account added successfully",
+            "account_id": payload['account_id'],
+            "account_name": payload['account_name'],
+            "timestamp": current_time_ist
+        }), 201
 
     except SQLAlchemyError as e:
         session.rollback()
-        error_message = f"Error inserting account: {str(e)}"
+        error_message = f"Database error while adding account: {str(e)}"
         log_error(error_message)
         notify_failure("Add Account Failed", error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
+
     except Exception as e:
         error_message = f"Unexpected error: {str(e)}"
         log_error(error_message)
         notify_failure("Add Account Failed", error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
+
     finally:
+        session.close()
         log_info("End of add_account function")
 
 
@@ -112,7 +153,6 @@ def get_all_accounts():
     """
     log_info("Received request to get all accounts")
     try:
-        # Fetch accounts from the database
         accounts = session.query(Account).all()
         total_count = len(accounts)
         log_info(f"Fetched {total_count} accounts")
@@ -121,7 +161,6 @@ def get_all_accounts():
         for account in accounts:
             account_dict = account.account_serialize_to_dict()
 
-            # Format currency_conversions
             if isinstance(account_dict.get('currency_conversions'), str):
                 currency_conversions = {}
                 conversions = account_dict['currency_conversions'].strip().split('\n')
@@ -133,7 +172,6 @@ def get_all_accounts():
 
             accounts_list.append(account_dict)
 
-        # Format account details for response
         account_details = "\n".join(
             [f"Account ID: {account['account_id']}\n"
              f"Account Name: {account['account_name']}\n"
@@ -143,21 +181,17 @@ def get_all_accounts():
              for account in accounts_list]
         )
 
-        # Construct success message
         success_message = (
             f"Successfully retrieved Total {total_count} accounts.\n\n"
             f"Account Details:\n*********************************************\n{account_details}\n"
             f"\nTotal count of accounts: {total_count}"
         )
 
-        # Send email notification
         notify_success("Get All Accounts Successful", success_message)
 
-        # Return JSON response
         return jsonify({"Accounts": accounts_list, "Total count of accounts": total_count}), 200
 
     except Exception as e:
-        # Handle exception
         error_message = f"Error in fetching accounts: {str(e)}"
         log_error(error_message)
         notify_failure("Get Accounts Failed", error_message)
@@ -221,6 +255,7 @@ def get_single_account():
 
 
 @app.route('/update-account', methods=['PUT'])
+@otp_required  # Apply the OTP decorator
 def update_account():
     """
     Updates account name
@@ -273,6 +308,7 @@ def update_account():
 
 
 @app.route('/delete-account', methods=['DELETE'])
+@otp_required  # Apply the OTP decorator
 def delete_account():
     """
     Deletes account based on account id

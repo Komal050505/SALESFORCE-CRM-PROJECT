@@ -1,14 +1,18 @@
 """
 This module contains all reusable functions that can be used based on requirements in app.py
 """
-
 # Regular expression module import
 import re
-
 # Date and time import
 from datetime import datetime, timedelta
+from functools import wraps
 
-from user_models.tables import Taxes
+from flask import request, jsonify
+from sqlalchemy.exc import SQLAlchemyError
+
+from db_connections.configurations import session
+from logging_package.logging_utility import log_error, log_info
+from user_models.tables import Taxes, OTPStore
 
 
 def get_opportunity_stage(probability):
@@ -166,42 +170,49 @@ def calculate_taxes(vehicle_id, tax_amount):
     return tax_record
 
 
-from functools import wraps
-from flask import request, jsonify
-import random
-import time
+# It is Universal OTP Decorator used for all api's
 
-# In-memory store for OTPs (you should replace this with a database in a production environment)
-otp_store = {}
-
-
-
-
-
-# Universal OTP Decorator
 def otp_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         payload = request.get_json()
 
-        # Check if the payload contains the email and OTP
-        if not payload or 'email' not in payload or 'otp' not in payload:
-            return jsonify({"error": "Email and OTP are required."}), 400
+        try:
+            if not payload or 'email' not in payload or 'otp' not in payload:
+                log_error("OTP validation failed: Email and OTP are required.")
+                return jsonify({"error": "Email and OTP are required."}), 400
 
-        email = payload['email']
-        otp = payload['otp']
+            email = payload['email']
+            otp = payload['otp']
 
-        # Check if OTP exists for this email
-        if email not in otp_store:
-            return jsonify({"error": "No OTP generated for this email."}), 400
+            otp_record = session.query(OTPStore).filter_by(email=email).order_by(OTPStore.timestamp.desc()).first()
 
-        stored_otp_data = otp_store[email]
-        if time.time() - stored_otp_data['timestamp'] > 300:  # OTP valid for 5 minutes
-            return jsonify({"error": "OTP has expired."}), 400
-        if int(otp) != stored_otp_data['otp']:
-            return jsonify({"error": "Invalid OTP."}), 400
+            if not otp_record:
+                log_error(f"OTP validation failed: No OTP generated for {email}.")
+                return jsonify({"error": "No OTP generated for this email."}), 400
 
-        # OTP is valid, proceed with the function
-        return func(*args, **kwargs)
+            # Check if OTP is expired (valid for 5 minutes)
+            if datetime.now() - otp_record.timestamp > timedelta(minutes=5):
+                log_error(f"OTP validation failed: OTP for {email} has expired.")
+                return jsonify({"error": "OTP has expired."}), 400
+
+            if otp != otp_record.otp:
+                log_error(f"OTP validation failed: Invalid OTP for {email}.")
+                return jsonify({"error": "Invalid OTP."}), 400
+
+            log_info(f"OTP validation successful for {email}.")
+            return func(*args, **kwargs)
+
+        except SQLAlchemyError as db_error:
+            session.rollback()
+            log_error(f"Database error while validating OTP for {email}: {db_error}")
+            return jsonify({"error": "Internal server error", "details": str(db_error)}), 500
+
+        except Exception as e:
+            log_error(f"Unexpected error while validating OTP for {email}: {e}")
+            return jsonify({"error": "Internal server error", "details": str(e)}), 500
+
+        finally:
+            session.close()
 
     return wrapper

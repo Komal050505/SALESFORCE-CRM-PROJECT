@@ -12550,3 +12550,184 @@ WHERE vehicle_services.service_id = %(pk_1)s
 2024-10-06 00:51:25,696 - INFO -  * Restarting with stat
 2024-10-06 00:51:26,821 - WARNING -  * Debugger is active!
 2024-10-06 00:51:26,823 - INFO -  * Debugger PIN: 480-735-411
+2024-10-10 17:47:03,936 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-10-10 17:47:03,937 - INFO - [33mPress CTRL+C to quit[0m
+2024-10-10 17:47:03,940 - INFO -  * Restarting with stat
+2024-10-10 17:47:05,170 - WARNING -  * Debugger is active!
+2024-10-10 17:47:05,176 - INFO -  * Debugger PIN: 480-735-411
+2024-10-10 17:47:07,935 - INFO - 127.0.0.1 - - [10/Oct/2024 17:47:07] "[31m[1mPOST /generate-otp HTTP/1.1[0m" 415 -
+2024-10-10 17:49:15,877 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\utilities\\reusables.py', reloading
+2024-10-10 17:49:16,078 - INFO -  * Restarting with stat
+2024-10-10 18:00:18,431 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-10-10 18:00:18,431 - INFO - [33mPress CTRL+C to quit[0m
+2024-10-10 18:00:18,432 - INFO -  * Restarting with stat
+2024-10-10 18:00:19,555 - WARNING -  * Debugger is active!
+2024-10-10 18:00:19,560 - INFO -  * Debugger PIN: 480-735-411
+2024-10-10 18:01:47,777 - INFO - 127.0.0.1 - - [10/Oct/2024 18:01:47] "[35m[1mPOST /generate-otp HTTP/1.1[0m" 500 -
+2024-10-10 18:02:54,116 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-10 18:02:54,390 - INFO -  * Restarting with stat
+2024-10-10 18:02:56,528 - WARNING -  * Debugger is active!
+2024-10-10 18:02:56,534 - INFO -  * Debugger PIN: 480-735-411
+2024-10-10 18:02:56,695 - INFO - BEGIN (implicit)
+2024-10-10 18:02:56,697 - INFO - INSERT INTO otp_store (email, otp, timestamp) VALUES (%(email)s, %(otp)s, %(timestamp)s) RETURNING otp_store.id
+2024-10-10 18:02:56,698 - INFO - [generated in 0.00048s] {'email': 'komalsaikiran05@gmail.com', 'otp': '903950', 'timestamp': datetime.datetime(2024, 10, 10, 18, 2, 56, 588589)}
+2024-10-10 18:02:56,708 - INFO - COMMIT
+2024-10-10 18:03:01,091 - INFO - 127.0.0.1 - - [10/Oct/2024 18:03:01] "POST /generate-otp HTTP/1.1" 200 -
+2024-10-10 18:03:42,789 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-10-10 18:03:42,789 - INFO - [33mPress CTRL+C to quit[0m
+2024-10-10 18:03:42,790 - INFO -  * Restarting with stat
+2024-10-10 18:03:43,737 - WARNING -  * Debugger is active!
+2024-10-10 18:03:43,740 - INFO -  * Debugger PIN: 480-735-411
+2024-10-10 18:05:14,532 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-10 18:05:14,718 - INFO -  * Restarting with stat
+2024-10-10 18:05:15,965 - WARNING -  * Debugger is active!
+2024-10-10 18:05:15,969 - INFO -  * Debugger PIN: 480-735-411
+2024-10-10 18:05:29,290 - INFO - BEGIN (implicit)
+2024-10-10 18:05:29,293 - INFO - INSERT INTO otp_store (email, otp, timestamp) VALUES (%(email)s, %(otp)s, %(timestamp)s) RETURNING otp_store.id
+2024-10-10 18:05:29,294 - INFO - [generated in 0.00060s] {'email': 'komalsaikiran05@gmail.com', 'otp': '636968', 'timestamp': datetime.datetime(2024, 10, 10, 18, 5, 29, 27949)}
+2024-10-10 18:05:29,300 - INFO - COMMIT
+2024-10-10 18:05:32,541 - INFO - 127.0.0.1 - - [10/Oct/2024 18:05:32] "POST /generate-otp HTTP/1.1" 200 -
+2024-10-10 18:09:46,688 - INFO - BEGIN (implicit)
+2024-10-10 18:09:46,691 - INFO - SELECT otp_store.id AS otp_store_id, otp_store.email AS otp_store_email, otp_store.otp AS otp_store_otp, otp_store.timestamp AS otp_store_timestamp 
+FROM otp_store 
+WHERE otp_store.email = %(email_1)s ORDER BY otp_store.timestamp DESC 
+ LIMIT %(param_1)s
+2024-10-10 18:09:46,692 - INFO - [generated in 0.00028s] {'email_1': 'komalsaikiran05@gmail.com', 'param_1': 1}
+2024-10-10 18:09:46,702 - INFO - OTP validation successful for komalsaikiran05@gmail.com.
+2024-10-10 18:09:46,702 - INFO - Received request to add new account
+2024-10-10 18:09:46,702 - DEBUG - Request payload: {'email': 'komalsaikiran05@gmail.com', 'otp': '636968', 'account_id': 'BMW555', 'account_name': 'BMW Inc'}
+2024-10-10 18:09:46,704 - INFO - INSERT INTO account (account_id, account_name) VALUES (%(account_id)s, %(account_name)s)
+2024-10-10 18:09:46,705 - INFO - [generated in 0.00057s] {'account_id': 'BMW555', 'account_name': 'BMW Inc'}
+2024-10-10 18:09:46,712 - INFO - COMMIT
+2024-10-10 18:09:46,714 - INFO - Account added successfully: BMW555
+2024-10-10 18:09:50,900 - INFO - BEGIN (implicit)
+2024-10-10 18:09:50,902 - INFO - SELECT otp_store.id AS otp_store_id, otp_store.email AS otp_store_email, otp_store.otp AS otp_store_otp, otp_store.timestamp AS otp_store_timestamp 
+FROM otp_store 
+WHERE otp_store.email = %(email_1)s 
+ LIMIT %(param_1)s
+2024-10-10 18:09:50,903 - INFO - [generated in 0.00075s] {'email_1': 'komalsaikiran05@gmail.com', 'param_1': 1}
+2024-10-10 18:09:50,910 - INFO - DELETE FROM otp_store WHERE otp_store.id = %(id)s
+2024-10-10 18:09:50,910 - INFO - [generated in 0.00046s] {'id': 1}
+2024-10-10 18:09:50,916 - INFO - COMMIT
+2024-10-10 18:09:50,920 - INFO - OTP cleared for komalsaikiran05@gmail.com after successful account addition.
+2024-10-10 18:09:50,920 - INFO - End of add_account function
+2024-10-10 18:09:50,921 - INFO - 127.0.0.1 - - [10/Oct/2024 18:09:50] "[35m[1mPOST /add-account HTTP/1.1[0m" 201 -
+2024-10-10 18:11:30,879 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-10 18:11:31,103 - INFO -  * Restarting with stat
+2024-10-10 18:11:32,591 - WARNING -  * Debugger is active!
+2024-10-10 18:11:32,595 - INFO -  * Debugger PIN: 480-735-411
+2024-10-10 18:14:08,436 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-10 18:14:08,688 - INFO -  * Restarting with stat
+2024-10-10 18:14:10,008 - WARNING -  * Debugger is active!
+2024-10-10 18:14:10,012 - INFO -  * Debugger PIN: 480-735-411
+2024-10-10 18:14:41,545 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-10 18:14:41,703 - INFO -  * Restarting with stat
+2024-10-10 18:14:42,950 - WARNING -  * Debugger is active!
+2024-10-10 18:14:42,954 - INFO -  * Debugger PIN: 480-735-411
+2024-10-10 18:19:26,649 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-10 18:19:26,846 - INFO -  * Restarting with stat
+2024-10-10 18:19:28,142 - WARNING -  * Debugger is active!
+2024-10-10 18:19:28,149 - INFO -  * Debugger PIN: 480-735-411
+2024-10-15 11:26:32,512 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-10-15 11:26:32,514 - INFO - [33mPress CTRL+C to quit[0m
+2024-10-15 11:26:32,519 - INFO -  * Restarting with stat
+2024-10-15 11:26:34,700 - WARNING -  * Debugger is active!
+2024-10-15 11:26:34,708 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 11:26:52,780 - INFO - BEGIN (implicit)
+2024-10-15 11:26:52,784 - INFO - INSERT INTO otp_store (email, otp, timestamp) VALUES (%(email)s, %(otp)s, %(timestamp)s) RETURNING otp_store.id
+2024-10-15 11:26:52,784 - INFO - [generated in 0.00039s] {'email': 'komalsaikiran05@gmail.com', 'otp': '245926', 'timestamp': datetime.datetime(2024, 10, 15, 11, 26, 52, 612479)}
+2024-10-15 11:26:52,823 - INFO - COMMIT
+2024-10-15 11:26:56,482 - INFO - 127.0.0.1 - - [15/Oct/2024 11:26:56] "POST /generate-otp HTTP/1.1" 200 -
+2024-10-15 11:30:13,358 - INFO - 127.0.0.1 - - [15/Oct/2024 11:30:13] "[31m[1mGET /get-all-accounts HTTP/1.1[0m" 415 -
+2024-10-15 11:31:22,932 - INFO - 127.0.0.1 - - [15/Oct/2024 11:31:22] "[31m[1mGET /get-all-accounts HTTP/1.1[0m" 415 -
+2024-10-15 11:33:03,811 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 11:33:03,980 - INFO -  * Restarting with stat
+2024-10-15 11:33:06,030 - WARNING -  * Debugger is active!
+2024-10-15 11:33:06,037 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 11:34:39,046 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 11:34:39,223 - INFO -  * Restarting with stat
+2024-10-15 11:34:41,033 - WARNING -  * Debugger is active!
+2024-10-15 11:34:41,040 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 11:36:00,041 - ERROR - OTP validation failed: Email and OTP are required.
+2024-10-15 11:36:00,043 - INFO - 127.0.0.1 - - [15/Oct/2024 11:36:00] "[31m[1mPUT /update-account HTTP/1.1[0m" 400 -
+2024-10-15 11:37:19,736 - ERROR - OTP validation failed: Email and OTP are required.
+2024-10-15 11:37:19,737 - INFO - 127.0.0.1 - - [15/Oct/2024 11:37:19] "[31m[1mPUT /update-account HTTP/1.1[0m" 400 -
+2024-10-15 11:37:27,289 - INFO - BEGIN (implicit)
+2024-10-15 11:37:27,291 - INFO - INSERT INTO otp_store (email, otp, timestamp) VALUES (%(email)s, %(otp)s, %(timestamp)s) RETURNING otp_store.id
+2024-10-15 11:37:27,291 - INFO - [generated in 0.00038s] {'email': 'komalsaikiran05@gmail.com', 'otp': '817403', 'timestamp': datetime.datetime(2024, 10, 15, 11, 37, 27, 176827)}
+2024-10-15 11:37:27,309 - INFO - COMMIT
+2024-10-15 11:37:31,068 - INFO - 127.0.0.1 - - [15/Oct/2024 11:37:31] "POST /generate-otp HTTP/1.1" 200 -
+2024-10-15 11:37:44,868 - ERROR - OTP validation failed: Email and OTP are required.
+2024-10-15 11:37:44,869 - INFO - 127.0.0.1 - - [15/Oct/2024 11:37:44] "[31m[1mPUT /update-account HTTP/1.1[0m" 400 -
+2024-10-15 11:40:09,144 - ERROR - OTP validation failed: Email and OTP are required.
+2024-10-15 11:40:09,144 - INFO - 127.0.0.1 - - [15/Oct/2024 11:40:09] "[31m[1mPUT /update-account HTTP/1.1[0m" 400 -
+2024-10-15 11:41:48,442 - INFO - BEGIN (implicit)
+2024-10-15 11:41:48,447 - INFO - SELECT otp_store.id AS otp_store_id, otp_store.email AS otp_store_email, otp_store.otp AS otp_store_otp, otp_store.timestamp AS otp_store_timestamp 
+FROM otp_store 
+WHERE otp_store.email = %(email_1)s ORDER BY otp_store.timestamp DESC 
+ LIMIT %(param_1)s
+2024-10-15 11:41:48,447 - INFO - [generated in 0.00045s] {'email_1': 'komalsaikiran05@gmail.com', 'param_1': 1}
+2024-10-15 11:41:48,472 - INFO - OTP validation successful for komalsaikiran05@gmail.com.
+2024-10-15 11:41:48,472 - INFO - Received request to update account details
+2024-10-15 11:41:48,472 - DEBUG - Account ID to update: acc1234, New Name: ACCENTURE
+2024-10-15 11:41:48,475 - INFO - SELECT account.account_id AS account_account_id, account.account_name AS account_account_name 
+FROM account 
+WHERE account.account_id = %(account_id_1)s 
+ LIMIT %(param_1)s
+2024-10-15 11:41:48,475 - INFO - [generated in 0.00047s] {'account_id_1': 'acc1234', 'param_1': 1}
+2024-10-15 11:41:48,486 - INFO - COMMIT
+2024-10-15 11:41:48,487 - INFO - Account ID: 
+acc1234
+
+Successfully updated with new name: 
+ACCENTURE
+2024-10-15 11:41:52,277 - INFO - End of update_account function
+2024-10-15 11:41:52,278 - INFO - 127.0.0.1 - - [15/Oct/2024 11:41:52] "PUT /update-account HTTP/1.1" 200 -
+2024-10-15 11:42:06,562 - INFO - BEGIN (implicit)
+2024-10-15 11:42:06,563 - INFO - SELECT otp_store.id AS otp_store_id, otp_store.email AS otp_store_email, otp_store.otp AS otp_store_otp, otp_store.timestamp AS otp_store_timestamp 
+FROM otp_store 
+WHERE otp_store.email = %(email_1)s ORDER BY otp_store.timestamp DESC 
+ LIMIT %(param_1)s
+2024-10-15 11:42:06,564 - INFO - [cached since 18.12s ago] {'email_1': 'komalsaikiran05@gmail.com', 'param_1': 1}
+2024-10-15 11:42:06,572 - ERROR - OTP validation failed: Invalid OTP for komalsaikiran05@gmail.com.
+2024-10-15 11:42:06,573 - INFO - ROLLBACK
+2024-10-15 11:42:06,575 - INFO - 127.0.0.1 - - [15/Oct/2024 11:42:06] "[31m[1mPUT /update-account HTTP/1.1[0m" 400 -
+2024-10-15 11:42:13,869 - INFO - BEGIN (implicit)
+2024-10-15 11:42:13,869 - INFO - SELECT otp_store.id AS otp_store_id, otp_store.email AS otp_store_email, otp_store.otp AS otp_store_otp, otp_store.timestamp AS otp_store_timestamp 
+FROM otp_store 
+WHERE otp_store.email = %(email_1)s ORDER BY otp_store.timestamp DESC 
+ LIMIT %(param_1)s
+2024-10-15 11:42:13,870 - INFO - [cached since 25.42s ago] {'email_1': 'komalsaikiran05@gmail.com', 'param_1': 1}
+2024-10-15 11:42:13,874 - INFO - OTP validation successful for komalsaikiran05@gmail.com.
+2024-10-15 11:42:13,874 - INFO - Received request to update account details
+2024-10-15 11:42:13,875 - DEBUG - Account ID to update: acc1234, New Name: ACCENTURE
+2024-10-15 11:42:13,876 - INFO - SELECT account.account_id AS account_account_id, account.account_name AS account_account_name 
+FROM account 
+WHERE account.account_id = %(account_id_1)s 
+ LIMIT %(param_1)s
+2024-10-15 11:42:13,877 - INFO - [cached since 25.4s ago] {'account_id_1': 'acc1234', 'param_1': 1}
+2024-10-15 11:42:13,879 - INFO - COMMIT
+2024-10-15 11:42:13,880 - INFO - Account ID: 
+acc1234
+
+Successfully updated with new name: 
+ACCENTURE
+2024-10-15 11:42:17,980 - INFO - End of update_account function
+2024-10-15 11:42:17,981 - INFO - 127.0.0.1 - - [15/Oct/2024 11:42:17] "PUT /update-account HTTP/1.1" 200 -
+2024-10-15 11:43:15,677 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 11:43:15,860 - INFO -  * Restarting with stat
+2024-10-15 11:43:16,810 - WARNING -  * Debugger is active!
+2024-10-15 11:43:16,813 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 11:45:28,229 - INFO - BEGIN (implicit)
+2024-10-15 11:45:28,232 - INFO - SELECT otp_store.id AS otp_store_id, otp_store.email AS otp_store_email, otp_store.otp AS otp_store_otp, otp_store.timestamp AS otp_store_timestamp 
+FROM otp_store 
+WHERE otp_store.email = %(email_1)s ORDER BY otp_store.timestamp DESC 
+ LIMIT %(param_1)s
+2024-10-15 11:45:28,232 - INFO - [generated in 0.00077s] {'email_1': 'komalsaikiran05@gmail.com', 'param_1': 1}
+2024-10-15 11:45:28,237 - ERROR - OTP validation failed: OTP for komalsaikiran05@gmail.com has expired.
+2024-10-15 11:45:28,237 - INFO - ROLLBACK
+2024-10-15 11:45:28,238 - INFO - 127.0.0.1 - - [15/Oct/2024 11:45:28] "[31m[1mDELETE /delete-account?account_id=acc1234 HTTP/1.1[0m" 400 -

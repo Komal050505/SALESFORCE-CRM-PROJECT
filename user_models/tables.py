@@ -17,6 +17,23 @@ import pytz
 Base = declarative_base()
 
 
+# --------------------------------------- OTP STORE TABLE --------------------------------------------------------------
+
+
+class OTPStore(Base):
+    __tablename__ = 'otp_store'
+
+    id = Column(Integer, primary_key=True)
+    email = Column(String(255), nullable=False)
+    otp = Column(String(6), nullable=False)
+    timestamp = Column(DateTime, nullable=False)
+
+    def __init__(self, email, otp, timestamp):
+        self.email = email
+        self.otp = otp
+        self.timestamp = timestamp
+
+
 # --------------------------------------- Account Table -----------------------------------------------------------
 class Account(Base):
     """

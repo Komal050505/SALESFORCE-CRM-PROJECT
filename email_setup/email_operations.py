@@ -32,8 +32,8 @@ from logging_package.logging_utility import log_info, log_error
 
 def send_email_otp(receiver_email, otp):
     """Send OTP to the user's email."""
-    sender_email = "your-email@gmail.com"
-    sender_password = "your-app-password"  # Generate this from your Gmail account
+    sender_email = "komalsaikiran05@gmail.com"
+    sender_password = "qlqgqoyzaynbogra"
     subject = "Your OTP"
     body = f"Your OTP is: {otp}"
 
