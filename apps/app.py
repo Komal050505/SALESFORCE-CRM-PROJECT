@@ -6,12 +6,14 @@ This module contains api's for Account table operations, Dealer table operations
 import uuid  # For generating universally unique identifiers (UUIDs)
 from datetime import datetime  # For date and time manipulations
 import random
+import time
 
 # Third-Party/External Library Imports
 import pytz  # For timezone handling and conversions
 from flask import Flask, request, jsonify  # For building web applications and handling requests/responses
 from sqlalchemy.exc import SQLAlchemyError  # For handling SQLAlchemy database exceptions
-
+import psutil
+import requests
 # # # Project-Specific Imports ********
 # Database Session
 from db_connections.configurations import session  # For managing database session connections
@@ -52,32 +54,127 @@ from utilities.reusables import (  # Reusable utility functions for validations 
 app = Flask(__name__)
 
 
+# ------------------------------------CHECKS OTHER APIS PERFORMANCES ---------------------------------------------------
+@app.route('/check-api-performance', methods=['POST'])
+def check_api_performance():
+    """
+    API to check the performance of another API by measuring execution time,
+    CPU usage, and memory usage.
+    Sends email notifications on success and failure, and logs all events.
+    """
+    try:
+        payload = request.get_json()
+        if not payload or 'url' not in payload:
+            error_message = "URL is required to check API performance."
+            log_error(error_message)
+            return jsonify({"error": error_message}), 400
+
+        url = payload['url']
+        log_info(f"Received request to check API performance for URL: {url}")
+
+        initial_cpu = psutil.cpu_percent()
+        initial_memory = psutil.virtual_memory().used
+        start_time = time.time()
+
+        log_info(f"Initial CPU: {initial_cpu}%, Initial Memory: {initial_memory} bytes")
+
+        response = requests.get(url)
+        response.raise_for_status()
+
+        end_time = time.time()
+        execution_time = end_time - start_time
+        final_cpu = psutil.cpu_percent()
+        final_memory = psutil.virtual_memory().used
+        memory_used = final_memory - initial_memory
+
+        performance_metrics = {
+            "url": url,
+            "status_code": response.status_code,
+            "response_time": execution_time,
+            "initial_cpu_usage": initial_cpu,
+            "final_cpu_usage": final_cpu,
+            "memory_used": memory_used,
+            "response": response.json()
+        }
+
+        log_info(f"API performance check successful for URL: {url}")
+        log_debug(f"Performance metrics: {performance_metrics}")
+
+        email_subject = f"API Performance Check Successful for URL: {url}"
+        email_content = (
+            f"API Performance Metrics for URL: {url}\n\n"
+            f"Status Code: {performance_metrics['status_code']}\n"
+            f"Response Time: {performance_metrics['response_time']} seconds\n"
+            f"Initial CPU Usage: {performance_metrics['initial_cpu_usage']}%\n"
+            f"Final CPU Usage: {performance_metrics['final_cpu_usage']}%\n"
+            f"Memory Used: {performance_metrics['memory_used']} bytes\n"
+        )
+        send_email(RECEIVER_EMAIL, email_subject, email_content)
+
+        return jsonify(performance_metrics), 200
+
+    except requests.exceptions.RequestException as e:
+        error_message = f"Failed to call the target API: {str(e)}"
+        log_error(error_message)
+
+        send_email(RECEIVER_EMAIL, "API Performance Check Failed", error_message)
+
+        return jsonify({"error": error_message}), 500
+
+    except Exception as e:
+        error_message = f"An error occurred: {str(e)}"
+        log_error(error_message)
+
+        send_email(RECEIVER_EMAIL, "API Performance Check Error", error_message)
+
+        return jsonify({"error": error_message}), 500
+
+    finally:
+        log_info("End of check_api_performance function")
+
+
 # ---------------------------------------- OTP GENERATOR API -----------------------------------------------------------
+
 @app.route('/generate-otp', methods=['POST'])
 def generate_otp():
     """
     Generates an OTP and sends it to the user's email, storing the OTP in PostgreSQL.
     """
-    payload = request.get_json()
-    if not payload or 'email' not in payload:
-        return jsonify({"error": "Email is required to generate OTP."}), 400
+    email = None
+    try:
+        payload = request.get_json()
+        if not payload or 'email' not in payload:
+            log_error("Email is required to generate OTP.")
+            return jsonify({"error": "Email is required to generate OTP."}), 400
 
-    email = payload['email']
-    otp = random.randint(100000, 999999)  # Generate a 6-digit OTP
+        email = payload['email']
+        otp = random.randint(100000, 999999)  # Generate a 6-digit OTP
+        timestamp = datetime.now()
 
-    # Get current timestamp
-    timestamp = datetime.now()
+        new_otp = OTPStore(email=email, otp=str(otp), timestamp=timestamp)
+        session.add(new_otp)
+        session.commit()
 
-    # Store OTP in the database
-    new_otp = OTPStore(email=email, otp=str(otp), timestamp=timestamp)
-    session.add(new_otp)
-    session.commit()
+        log_info(f"Generated OTP for {email}: {otp}")
 
-    # Send OTP via email
-    send_email_otp(email, otp)
+        send_email_otp(email, otp)
 
-    return jsonify({"message": f"OTP sent to {email}",
-                    "otp": f"OTP is {otp}"}), 200
+        return jsonify({"message": f"OTP sent to {email}",
+                        "otp": f"OTP is {otp}"}), 200
+
+    except SQLAlchemyError as e:
+        session.rollback()
+        log_error(f"Database error occurred while generating OTP for {email}: {str(e)}")
+        return jsonify({"error": "Database error", "details": str(e)}), 500
+
+    except Exception as e:
+        session.rollback()
+        log_error(f"Unexpected error occurred while generating OTP for {email}: {str(e)}")
+        return jsonify({"error": "Internal server error", "details": str(e)}), 500
+
+    finally:
+        session.close()
+        log_info(f"End of generate_otp function for email={email}")
 
 
 # ----------------------------------------------- ACCOUNT TABLE ------------------------------------------------
@@ -135,6 +232,7 @@ def add_account():
         return jsonify({"error": "Internal server error", "details": error_message}), 500
 
     except Exception as e:
+        session.rollback()
         error_message = f"Unexpected error: {str(e)}"
         log_error(error_message)
         notify_failure("Add Account Failed", error_message)
@@ -192,11 +290,13 @@ def get_all_accounts():
         return jsonify({"Accounts": accounts_list, "Total count of accounts": total_count}), 200
 
     except Exception as e:
+        session.rollback()
         error_message = f"Error in fetching accounts: {str(e)}"
         log_error(error_message)
         notify_failure("Get Accounts Failed", error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
     finally:
+        session.close()
         log_info("End of get_all_accounts function")
 
 
@@ -208,49 +308,44 @@ def get_single_account():
     """
     log_info(f"Received request to get account details with account id {'account_id'}")
     try:
-        # Fetch account_id from query parameters
         accountid = request.args.get('account_id')
         log_debug(f"Account ID fetched is: {accountid}")
 
-        # Check if account_id is provided
         if not accountid:
             error_message = "Account ID not provided or invalid. Please provide a valid Account ID."
             log_error(error_message)
-            notify_failure("Get Single Account Failed", error_message)  # Send email for failure
+            notify_failure("Get Single Account Failed", error_message)
             return jsonify({"error": error_message}), 400
 
-        # Fetch the account from the database
         account = session.query(Account).filter_by(account_id=accountid).first()
 
         if not account:
             error_message = f"Account not found: {accountid}"
             log_error(error_message)
-            notify_failure("Get Single Account Failed", error_message)  # Send email for failure
+            notify_failure("Get Single Account Failed", error_message)
             return jsonify({"error": "Account not found"}), 404
 
         log_info(f"Fetched account: {accountid}")
 
-        # Serialize account data to dictionary
         account_details = account.account_serialize_to_dict()
 
-        # Prepare success message
         success_message = (f"Successfully fetched single account details - "
                            f"\n\nAccount ID: {account_details['account_id']}, "
                            f"\nName: {account_details['account_name']}")
 
-        # Send email notification with the account details
         notify_success("Get Single Account Success", success_message)
 
-        # Return response with serialized account details
         return jsonify({"Account": account_details, "Message": "Single Account Details:"}), 200
 
     except Exception as e:
+        session.rollback()
         error_message = f"Error in fetching account: {str(e)}"
         log_error(error_message)
-        notify_failure("Get Single Account Failed", error_message)  # Send email for failure
+        notify_failure("Get Single Account Failed", error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
 
     finally:
+        session.close()
         log_info("End of get_single_account function")
 
 
@@ -298,12 +393,14 @@ def update_account():
         }), 200
 
     except Exception as e:
+        session.rollback()
         error_message = f"Error in updating account: {str(e)}"
         log_error(error_message)
         notify_failure("Update Account Failed", error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
 
     finally:
+        session.close()
         log_info("End of update_account function")
 
 
@@ -316,6 +413,16 @@ def delete_account():
     """
     log_info("Received request to delete account")
     try:
+        otp = request.args.get('otp')
+        email = request.args.get('email')
+
+        if not otp or not email:
+            error_message = "OTP and email are required as query parameters."
+            log_error(error_message)
+            return jsonify({"error": error_message}), 400
+
+        log_debug(f"Received OTP: {otp}, Email: {email}")
+
         account_id = request.args.get('account_id')
         log_debug(f"Account ID to delete: {account_id}")
 
@@ -350,18 +457,21 @@ def delete_account():
         }), 200
 
     except Exception as e:
+        session.rollback()
         error_message = f"Error in deleting account: {str(e)}"
         log_error(error_message)
         notify_failure("Delete Account Failed", error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
 
     finally:
+        session.close()
         log_info("End of delete_account function")
 
 
 # ----------------------------------------------- DEALER TABLE ------------------------------------------------
 
 @app.route('/add-dealer', methods=['POST'])
+@otp_required  # Apply the OTP decorator
 def add_dealer():
     """
     Adds new Dealer to the dealer table
@@ -407,34 +517,36 @@ def add_dealer():
         notify_failure("Add Dealer Failed", error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
     except Exception as e:
+        session.rollback()
         error_message = f"Unexpected error: {str(e)}"
         log_error(error_message)
         notify_failure("Add Dealer Failed", error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
     finally:
+        session.close()
         log_info("End of add_dealer function")
 
 
 @app.route('/get-all-dealers', methods=['GET'])
 def get_all_dealers():
+    """
+    Fetches all dealers data
+    :return: JSON Response with emil notifications
+    """
     log_info("Received request to get all dealers")
     try:
-        # Fetch all dealers from the database
         dealers = session.query(Dealer).all()
 
         if not dealers:
             log_info("No dealers found.")
             return jsonify({"message": "No dealers found"}), 404
 
-        # Serialize dealer data
         dealers_data = [dealer.dealer_serialize_to_dict() for dealer in dealers]
 
-        # Prepare formatted success message for email
         success_message = f"Dealers retrieved successfully. Count: {len(dealers)}"
         log_info(success_message)
         notify_success("Get All Dealers Successful", success_message)
 
-        # Return the response with dealer data
         return jsonify({
             "message": "Dealers retrieved successfully.",
             "Total count": len(dealers),
@@ -442,17 +554,19 @@ def get_all_dealers():
         }), 200
 
     except SQLAlchemyError as e:
-        session.rollback()  # Rollback transaction in case of error
+        session.rollback()
         error_message = f"Error retrieving dealers: {str(e)}"
         log_error(error_message)
         notify_failure("Get All Dealers Failed", error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
     except Exception as e:
+        session.rollback()
         error_message = f"Unexpected error: {str(e)}"
         log_error(error_message)
         notify_failure("Get All Dealers Failed", error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
     finally:
+        session.close()
         log_info("End of get_all_dealers function")
 
 
@@ -509,7 +623,6 @@ def get_particular_dealers():
         log_info(success_message)
         notify_success("Get Dealers Successful", success_message)
 
-        # Return the response with dealer data
         return jsonify({
             "message": f"Retrieved Total {len(dealers)} dealer(s) successfully.",
             "dealers": dealers_data
@@ -522,15 +635,18 @@ def get_particular_dealers():
         notify_failure("Get Dealers Failed", error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
     except Exception as e:
+        session.rollback()
         error_message = f"Unexpected error: {str(e)}"
         log_error(error_message)
         notify_failure("Get Dealers Failed", error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
     finally:
+        session.close()
         log_info("End of get_dealers function")
 
 
 @app.route('/update-dealer', methods=['PUT'])
+@otp_required  # Apply the OTP decorator
 def update_dealer():
     """
     Updates dealer based on dealer id
@@ -589,22 +705,36 @@ def update_dealer():
         notify_failure("Update Dealer Failed", error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
     except Exception as e:
+        session.rollback()
         error_message = f"Unexpected error: {str(e)}"
         log_error(error_message)
         notify_failure("Update Dealer Failed", error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
     finally:
+        session.close()
         log_info("End of update_dealer function")
 
 
 @app.route('/delete-single-dealer', methods=['DELETE'])
+@otp_required  # Apply the OTP decorator
 def delete_single_dealer():
     """
-    Deletes the single dealer based on dealer id/ dealer code/ opportunity owner
+    Deletes a single dealer based on dealer_id, dealer_code, or opportunity_owner.
+    OTP and email are provided as query parameters.
     :return: JSON response with email notifications
     """
     log_info("Received request to delete a dealer")
     try:
+        otp = request.args.get('otp')
+        email = request.args.get('email')
+
+        if not otp or not email:
+            error_message = "OTP and email are required as query parameters."
+            log_error(error_message)
+            return jsonify({"error": error_message}), 400
+
+        log_debug(f"Received OTP: {otp}, Email: {email}")
+
         dealer_id = request.args.get('dealer_id')
         dealer_code = request.args.get('dealer_code')
         opportunity_owner = request.args.get('opportunity_owner')
@@ -649,15 +779,18 @@ def delete_single_dealer():
         notify_failure("Delete Dealer Failed", error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
     except Exception as e:
+        session.rollback()
         error_message = f"Unexpected error: {str(e)}"
         log_error(error_message)
         notify_failure("Delete Dealer Failed", error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
     finally:
+        session.close()
         log_info("End of delete_dealer function")
 
 
 @app.route('/delete-all-dealers', methods=['DELETE'])
+@otp_required  # Apply the OTP decorator
 def delete_all_dealers():
     """
     Deletes all dealers based on dealer id/ dealer code/ opportunity owner
@@ -708,12 +841,14 @@ def delete_all_dealers():
         return jsonify({"error": "Internal server error", "details": error_message}), 500
 
     except Exception as e:
+        session.rollback()
         error_message = f"Unexpected error: {str(e)}"
         log_error(error_message)
         notify_failure("Delete Dealers Failed", error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
 
     finally:
+        session.close()
         log_info("End of delete_dealers function")
 
 
@@ -721,6 +856,7 @@ def delete_all_dealers():
 
 
 @app.route('/new-customer', methods=["POST"])
+@otp_required  # Apply the OTP decorator
 def create_new_customer():
     """
     Creates a new customer in the opportunity table.
@@ -742,8 +878,7 @@ def create_new_customer():
         account = session.query(Account).filter_by(account_name=account_name).first()
 
         if not account:
-            # Account does not exist, add new account
-            new_account_id = str(uuid.uuid4())  # Example of auto-generating a UUID for account_id
+            new_account_id = str(uuid.uuid4())
             new_account = Account(
                 account_id=new_account_id,
                 account_name=account_name
@@ -752,7 +887,6 @@ def create_new_customer():
             session.commit()
             log_info(f"New account added: {account_name}")
 
-            # Notify user about the new account addition
             account_creation_message = (f"New account added to the database:\n"
                                         f"Account Name: {account_name}")
             notify_success("New Account Added", account_creation_message)
@@ -875,7 +1009,7 @@ def create_new_customer():
         }), 201
 
     except SQLAlchemyError as e:
-        session.rollback()  # Rollback the session on error
+        session.rollback()
         error_message = f"Error in creating customer: {str(e)}"
         log_error(error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
@@ -950,14 +1084,12 @@ def get_opportunities():
             stage = validate_stage(stage)
             log_info(f"Validated stage: {stage}")
 
-        # Validate vehicle_model_id
         if vehicle_model_id and len(vehicle_model_id) > 255:
             raise ValueError("Vehicle model ID is too long. Maximum length is 255 characters.")
 
         query = session.query(Opportunity)
         log_info("Constructed initial query")
 
-        # Apply filters based on query parameters
         if opportunity_id:
             query = query.filter(Opportunity.opportunity_id == opportunity_id)
             log_info(f"Applied filter: opportunity_id = {opportunity_id}")
@@ -1058,28 +1190,33 @@ def get_opportunities():
         return jsonify({"Opportunities": opportunities_list, "Total count of opportunities": total_count}), 200
 
     except ValueError as ve:
+        session.rollback()
         error_message = f"Validation error: {str(ve)}"
         log_error(error_message)
         notify_failure("Get Opportunities Validation Failed", error_message)
         return jsonify({"error": "Bad Request", "details": error_message}), 400
 
     except SQLAlchemyError as sae:
+        session.rollback()
         error_message = f"Database error: {str(sae)}"
         log_error(error_message)
         notify_failure("Get Opportunities Database Error", error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
 
     except Exception as e:
+        session.rollback()
         error_message = f"Error in fetching opportunities: {str(e)}"
         log_error(error_message)
         notify_failure("Get Opportunities Failed", error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
 
     finally:
+        session.close()
         log_info("End of get_opportunities function")
 
 
 @app.route('/update-opportunity', methods=['PUT'])
+@otp_required  # Apply the OTP decorator
 def update_opportunity():
     """
     Update an existing Opportunity record.
@@ -1091,7 +1228,6 @@ def update_opportunity():
         data = request.get_json()
         log_info(f"Request data: {data}")
 
-        # Retrieve and log the input data
         opportunity_id = data.get('opportunity_id')
         opportunity_name = data.get('opportunity_name')
         account_name = data.get('account_name')
@@ -1256,28 +1392,33 @@ def update_opportunity():
         }), 200
 
     except ValueError as ve:
+        session.rollback()
         error_message = f"Validation error: {str(ve)}"
         log_error(error_message)
         notify_failure("Update Opportunity Validation Failed", error_message)
         return jsonify({"error": "Bad Request", "details": error_message}), 400
 
     except SQLAlchemyError as sae:
+        session.rollback()
         error_message = f"Database error: {str(sae)}"
         log_error(error_message)
         notify_failure("Update Opportunity Database Error", error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
 
     except Exception as e:
+        session.rollback()
         error_message = f"Error updating opportunity: {str(e)}"
         log_error(error_message)
         notify_failure("Update Opportunity Failed", error_message)
         return jsonify({"error": "Internal server error", "details": error_message}), 500
 
     finally:
+        session.close()
         log_info("End of update_opportunity function")
 
 
 @app.route('/delete-customer', methods=["DELETE"])
+@otp_required  # Apply the OTP decorator
 def delete_customer():
     """
     Deletes a customer from the opportunity table based on query parameters.
@@ -1285,6 +1426,16 @@ def delete_customer():
     """
     log_info("Received request to delete customer")
     try:
+        otp = request.args.get('otp')
+        email = request.args.get('email')
+
+        if not otp or not email:
+            error_message = "OTP and email are required as query parameters."
+            log_error(error_message)
+            return jsonify({"error": error_message}), 400
+
+        log_debug(f"Received OTP: {otp}, Email: {email}")
+
         opportunity_id = request.args.get("opportunity_id")
         account_name = request.args.get("account_name")
         dealer_id = request.args.get("dealer_id")
@@ -1371,6 +1522,7 @@ def delete_customer():
         return jsonify({"message": "Deleted successfully"}), 200
 
     except Exception as e:
+        session.rollback()
         error_message = f"Error in deleting customer: {str(e)}"
         log_error(error_message)
         detailed_error_message = f"Failed to delete customer due to an internal server error.\nDetails: {str(e)}"
@@ -1378,6 +1530,7 @@ def delete_customer():
         return jsonify({"error": "Internal server error", "details": error_message}), 500
 
     finally:
+        session.close()
         log_info("End of delete_customer function")
 
 
@@ -1385,78 +1538,110 @@ def delete_customer():
 
 
 @app.route('/vehicle-details', methods=['POST'])
+@otp_required  # Apply the OTP decorator
 def create_new_vehicle_details():
-    data = request.get_json()
+    """
+    Creates new vehicle details based on the provided JSON data.
 
-    # Validate incoming data
-    required_fields = ['vehicle_model', 'vehicle_year']
-    for field in required_fields:
-        if field not in data:
-            log_error(f'Missing required field: {field}')
-            return jsonify({'error': f'Missing required field: {field}'}), 400
+    Required Fields:
+    vehicle_model (str): The model of the vehicle.
+    vehicle_year (int): The year of the vehicle.
 
-    if not isinstance(data.get('vehicle_year'), int) or data.get('vehicle_year') <= 0:
-        log_error('Invalid vehicle_year: must be a positive integer')
-        return jsonify({'error': 'Invalid vehicle_year: must be a positive integer'}), 400
+    Optional Fields:
+    engine_type (str): The engine type of the vehicle.
+    transmission (str): The transmission type of the vehicle.
+    fuel_type (str): The fuel type of the vehicle.
+    body_type (str): The body type of the vehicle.
+    warranty_period_years (int): The warranty period in years.
+    color (str): The color of the vehicle.
+    model_variant (str): The model variant (e.g., Top, Mid, Base).
+    tyre_company (str): The company of the tyre.
+    tyre_size (str): The size of the tyre.
+    start_type (str): The start type (e.g., Key, Push Start).
+    sunroof_available (bool): Whether the sunroof is available.
+    gear_type (str): The gear type (e.g., Gear, Gearless).
+    vehicle_type (str): The type of vehicle (e.g., SUV, Sedan, Hatchback).
 
-    # Additional validations for new fields
-    if 'color' in data and not isinstance(data['color'], str):
-        log_error('Invalid color: must be a string')
-        return jsonify({'error': 'Invalid color: must be a string'}), 400
-
-    if 'sunroof_available' in data and not isinstance(data['sunroof_available'], bool):
-        log_error('Invalid sunroof_available: must be a boolean')
-        return jsonify({'error': 'Invalid sunroof_available: must be a boolean'}), 400
-
-    log_debug(f'Received request to create vehicle details: {data}')
-
+    :return: JSON response with the creation status and vehicle details.
+    """
     try:
-        new_vehicle = VehicleDetails(
-            vehicle_model=data['vehicle_model'],
-            vehicle_year=data['vehicle_year'],
-            engine_type=data.get('engine_type'),
-            transmission=data.get('transmission'),
-            fuel_type=data.get('fuel_type'),
-            body_type=data.get('body_type'),
-            warranty_period_years=data.get('warranty_period_years'),
-            color=data.get('color'),
-            model_variant=data.get('model_variant'),
-            tyre_company=data.get('tyre_company'),
-            tyre_size=data.get('tyre_size'),
-            start_type=data.get('start_type'),
-            sunroof_available=data.get('sunroof_available'),
-            gear_type=data.get('gear_type'),
-            vehicle_type=data.get('vehicle_type')
-        )
+        data = request.get_json()
 
-        session.add(new_vehicle)
-        session.commit()
+        required_fields = ['vehicle_model', 'vehicle_year']
+        for field in required_fields:
+            if field not in data:
+                log_error(f'Missing required field: {field}')
+                return jsonify({'error': f'Missing required field: {field}'}), 400
 
-        vehicle_details = new_vehicle.serialize_to_dict()
-        formatted_details = format_vehicle_details(vehicle_details)
+        if not isinstance(data.get('vehicle_year'), int) or data.get('vehicle_year') <= 0:
+            log_error('Invalid vehicle_year: must be a positive integer')
+            return jsonify({'error': 'Invalid vehicle_year: must be a positive integer'}), 400
 
-        log_info(f'Created new vehicle details: {formatted_details}')
+        if 'color' in data and not isinstance(data['color'], str):
+            log_error('Invalid color: must be a string')
+            return jsonify({'error': 'Invalid color: must be a string'}), 400
 
-        # Notify success with formatted vehicle details
-        notify_success(
-            subject='New Vehicle Details Created',
-            details=f'New vehicle details created:\n{formatted_details}'
-        )
+        if 'sunroof_available' in data and not isinstance(data['sunroof_available'], bool):
+            log_error('Invalid sunroof_available: must be a boolean')
+            return jsonify({'error': 'Invalid sunroof_available: must be a boolean'}), 400
 
-        return jsonify({'message': 'Vehicle details created successfully', 'vehicle': vehicle_details}), 201
+        log_debug(f'Received request to create vehicle details: {data}')
 
-    except SQLAlchemyError as e:
+        try:
+            new_vehicle = VehicleDetails(
+                vehicle_model=data['vehicle_model'],
+                vehicle_year=data['vehicle_year'],
+                engine_type=data.get('engine_type'),
+                transmission=data.get('transmission'),
+                fuel_type=data.get('fuel_type'),
+                body_type=data.get('body_type'),
+                warranty_period_years=data.get('warranty_period_years'),
+                color=data.get('color'),
+                model_variant=data.get('model_variant'),
+                tyre_company=data.get('tyre_company'),
+                tyre_size=data.get('tyre_size'),
+                start_type=data.get('start_type'),
+                sunroof_available=data.get('sunroof_available'),
+                gear_type=data.get('gear_type'),
+                vehicle_type=data.get('vehicle_type')
+            )
+
+            session.add(new_vehicle)
+            session.commit()
+
+            vehicle_details = new_vehicle.serialize_to_dict()
+            formatted_details = format_vehicle_details(vehicle_details)
+
+            log_info(f'Created new vehicle details: {formatted_details}')
+
+            notify_success(
+                subject='New Vehicle Details Created',
+                details=f'New vehicle details created:\n{formatted_details}'
+            )
+
+            return jsonify({'message': 'Vehicle details created successfully', 'vehicle': vehicle_details}), 201
+
+        except SQLAlchemyError as e:
+            session.rollback()
+            error_message = str(e)
+            log_error(f'Failed to create vehicle details: {error_message}')
+
+            notify_failure(
+                subject='Error Creating Vehicle Details',
+                details=f'Failed to create vehicle details:\n{error_message}'
+            )
+
+            return jsonify({'error': error_message}), 400
+
+        except Exception as e:
+            session.rollback()
+            log_error(f'Unexpected error occurred while creating vehicle details: {str(e)}')
+            return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
+
+    except Exception as e:
         session.rollback()
-        error_message = str(e)
-        log_error(f'Failed to create vehicle details: {error_message}')
-
-        # Notify failure with error message
-        notify_failure(
-            subject='Error Creating Vehicle Details',
-            details=f'Failed to create vehicle details:\n{error_message}'
-        )
-
-        return jsonify({'error': error_message}), 400
+        log_error(f'Error processing request: {str(e)}')
+        return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
 
 
 @app.route('/search-vehicles', methods=['GET'])
@@ -1465,55 +1650,53 @@ def search_vehicles():
     Searches for vehicles based on various query parameters.
 
     Query Parameters:
-    - vehicle_model_id (str): ID of the vehicle.
-    - vehicle_model (str): Filter by vehicle model.
-    - vehicle_year (int): Filter by vehicle year.
-    - engine_type (str): Filter by engine type.
-    - transmission (str): Filter by transmission type.
-    - fuel_type (str): Filter by fuel type.
-    - body_type (str): Filter by body type.
-    - warranty_period_years (int): Filter by warranty period in years.
-    - color (str): Filter by vehicle color.
-    - model_variant (str): Filter by model variant (e.g., Top, Mid, Base).
-    - tyre_company (str): Filter by tyre company.
-    - tyre_size (str): Filter by tyre size.
-    - start_type (str): Filter by start type (e.g., Key, Push Start).
-    - sunroof_available (bool): Filter by sunroof availability.
-    - gear_type (str): Filter by gear type (e.g., Gear, Gearless).
-    - vehicle_type (str): Filter by vehicle type (e.g., SUV, Sedan, Hatchback).
+    vehicle_model_id (str): ID of the vehicle.
+    vehicle_model (str): Filter by vehicle model.
+    vehicle_year (int): Filter by vehicle year.
+    engine_type (str): Filter by engine type.
+    transmission (str): Filter by transmission type.
+    fuel_type (str): Filter by fuel type.
+    body_type (str): Filter by body type.
+    warranty_period_years (int): Filter by warranty period in years.
+    color (str): Filter by vehicle color.
+    model_variant (str): Filter by model variant (e.g., Top, Mid, Base).
+    tyre_company (str): Filter by tyre company.
+    tyre_size (str): Filter by tyre size.
+    start_type (str): Filter by start type (e.g., Key, Push Start).
+    sunroof_available (bool): Filter by sunroof availability.
+    gear_type (str): Filter by gear type (e.g., Gear, Gearless).
+    vehicle_type (str): Filter by vehicle type (e.g., SUV, Sedan, Hatchback).
 
     :return: JSON response with vehicle details or an error message.
     """
-    # Extract query parameters
-    vehicle_model_id = request.args.get('vehicle_model_id')
-    vehicle_model = request.args.get('vehicle_model')
-    vehicle_year = request.args.get('vehicle_year', type=int)
-    engine_type = request.args.get('engine_type')
-    transmission = request.args.get('transmission')
-    fuel_type = request.args.get('fuel_type')
-    body_type = request.args.get('body_type')
-    warranty_period_years = request.args.get('warranty_period_years', type=int)
-    color = request.args.get('color')
-    model_variant = request.args.get('model_variant')
-    tyre_company = request.args.get('tyre_company')
-    tyre_size = request.args.get('tyre_size')
-    start_type = request.args.get('start_type')
-    sunroof_available = request.args.get('sunroof_available')
-    gear_type = request.args.get('gear_type')
-    vehicle_type = request.args.get('vehicle_type')
-
-    log_info("Received request with parameters: "
-             f"vehicle_model_id={vehicle_model_id}, vehicle_model={vehicle_model}, vehicle_year={vehicle_year}, "
-             f"engine_type={engine_type}, transmission={transmission}, fuel_type={fuel_type}, body_type={body_type}, "
-             f"warranty_period_years={warranty_period_years}, color={color}, model_variant={model_variant}, "
-             f"tyre_company={tyre_company}, tyre_size={tyre_size}, start_type={start_type}, "
-             f"sunroof_available={sunroof_available}, gear_type={gear_type}, vehicle_type={vehicle_type}")
-
     try:
-        # Start with the base query
+        # Extract query parameters
+        vehicle_model_id = request.args.get('vehicle_model_id')
+        vehicle_model = request.args.get('vehicle_model')
+        vehicle_year = request.args.get('vehicle_year', type=int)
+        engine_type = request.args.get('engine_type')
+        transmission = request.args.get('transmission')
+        fuel_type = request.args.get('fuel_type')
+        body_type = request.args.get('body_type')
+        warranty_period_years = request.args.get('warranty_period_years', type=int)
+        color = request.args.get('color')
+        model_variant = request.args.get('model_variant')
+        tyre_company = request.args.get('tyre_company')
+        tyre_size = request.args.get('tyre_size')
+        start_type = request.args.get('start_type')
+        sunroof_available = request.args.get('sunroof_available')
+        gear_type = request.args.get('gear_type')
+        vehicle_type = request.args.get('vehicle_type')
+
+        log_info("Received request with parameters: "
+                 f"vehicle_model_id={vehicle_model_id}, vehicle_model={vehicle_model}, vehicle_year={vehicle_year}, "
+                 f"engine_type={engine_type}, transmission={transmission}, fuel_type={fuel_type}, body_type={body_type}, "
+                 f"warranty_period_years={warranty_period_years}, color={color}, model_variant={model_variant}, "
+                 f"tyre_company={tyre_company}, tyre_size={tyre_size}, start_type={start_type}, "
+                 f"sunroof_available={sunroof_available}, gear_type={gear_type}, vehicle_type={vehicle_type}")
+
         query = session.query(VehicleDetails)
 
-        # Apply filters based on provided query parameters
         if vehicle_model_id:
             query = query.filter(VehicleDetails.vehicle_model_id == vehicle_model_id)
         if vehicle_model:
@@ -1548,7 +1731,6 @@ def search_vehicles():
         if vehicle_type:
             query = query.filter(VehicleDetails.vehicle_type.ilike(f"%{vehicle_type}%"))
 
-        # Execute the query
         vehicles = query.all()
         total_count = len(vehicles)
 
@@ -1560,7 +1742,6 @@ def search_vehicles():
 
         vehicles_info = [vehicle.serialize_to_dict() for vehicle in vehicles]
 
-        # Generate the email body
         email_subject = "Vehicle Details Retrieved"
         email_body = generate_vehicle_details_email_body(
             vehicles_info=vehicles_info,
@@ -1575,7 +1756,7 @@ def search_vehicles():
         })
 
     except SQLAlchemyError as e:
-        # Log database errors and notify via email
+        session.rollback()
         error_message = f"Database error occurred: {str(e)}"
         log_error(error_message)
         send_email(RECEIVER_EMAIL, "Database Error",
@@ -1583,7 +1764,7 @@ def search_vehicles():
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
 
     except Exception as e:
-        # Log unexpected errors and notify via email
+        session.rollback()
         error_message = f"Unexpected error occurred: {str(e)}"
         log_error(error_message)
         send_email(RECEIVER_EMAIL, "Unexpected Error",
@@ -1591,100 +1772,102 @@ def search_vehicles():
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
 
     finally:
+        session.close()
         log_info("End of search_vehicles function")
 
 
 @app.route('/update-vehicle-details', methods=['PUT'])
+@otp_required  # Apply the OTP decorator
 def update_vehicle_details():
     """
     Updates the details of a specific vehicle.
 
     JSON Body:
-    - vehicle_model_id (str): The unique ID of the vehicle to be updated.
-    - vehicle_model (str): New vehicle model name.
-    - vehicle_year (int): New vehicle year.
-    - engine_type (str): New engine type.
-    - transmission (str): New transmission type.
-    - fuel_type (str): New fuel type.
-    - body_type (str): New body type.
-    - warranty_period_years (int): New warranty period in years.
+    vehicle_model_id (str): The unique ID of the vehicle to be updated.
+    vehicle_model (str): New vehicle model name.
+    vehicle_year (int): New vehicle year.
+    engine_type (str): New engine type.
+    transmission (str): New transmission type.
+    fuel_type (str): New fuel type.
+    body_type (str): New body type.
+    warranty_period_years (int): New warranty period in years.
 
     :return: JSON response with updated vehicle details or an error message.
     """
-    data = request.get_json()
-
-    vehicle_model_id = data.get('vehicle_model_id')
-    if not vehicle_model_id:
-        log_error("Vehicle model ID is missing from the request body.")
-        return jsonify({"error": "Vehicle model ID is required"}), 400
-
-    log_info(f"Request to update vehicle details received for vehicle_model_id={vehicle_model_id}")
-
-    vehicle = session.query(VehicleDetails).get(vehicle_model_id)
-    if vehicle is None:
-        log_error(f"Vehicle with ID {vehicle_model_id} not found.")
-        send_email(
-            RECEIVER_EMAIL,
-            "Vehicle Not Found",
-            f"Dear Team,\n\nVehicle with ID {vehicle_model_id} could not be found in the database.\nPlease check and verify the details.\n\nBest regards,\nYour Team"
-        )
-        return jsonify({"error": "Vehicle not found"}), 404
-
+    vehicle_model_id = None  # Initialize vehicle_model_id to ensure it can be referenced in finally block
     try:
-        # Log the initial state of the vehicle
-        log_info(f"Original vehicle data: {vehicle.serialize_to_dict()}")
+        data = request.get_json()
+        if data is None:
+            raise ValueError("Request body must be in JSON format.")
 
-        # Update fields with new values, or retain current values if not provided
-        vehicle.vehicle_model = data.get('vehicle_model', vehicle.vehicle_model)
-        vehicle.vehicle_year = data.get('vehicle_year', vehicle.vehicle_year)
-        vehicle.engine_type = data.get('engine_type', vehicle.engine_type)
-        vehicle.transmission = data.get('transmission', vehicle.transmission)
-        vehicle.fuel_type = data.get('fuel_type', vehicle.fuel_type)
-        vehicle.body_type = data.get('body_type', vehicle.body_type)
-        vehicle.warranty_period_years = data.get('warranty_period_years', vehicle.warranty_period_years)
+        vehicle_model_id = data.get('vehicle_model_id')
+        if not vehicle_model_id:
+            log_error("Vehicle model ID is missing from the request body.")
+            return jsonify({"error": "Vehicle model ID is required"}), 400
 
-        # Commit the changes to the database
-        session.commit()
+        log_info(f"Request to update vehicle details received for vehicle_model_id={vehicle_model_id}")
 
-        # Serialize updated vehicle data
-        updated_vehicle_info = vehicle.serialize_to_dict()
+        vehicle = session.query(VehicleDetails).get(vehicle_model_id)
+        if vehicle is None:
+            log_error(f"Vehicle with ID {vehicle_model_id} not found.")
+            send_email(
+                RECEIVER_EMAIL,
+                "Vehicle Not Found",
+                f"Dear Team,\n\nVehicle with ID {vehicle_model_id} could not be found in the database.\nPlease check and verify the details.\n\nBest regards,\nYour Team"
+            )
+            return jsonify({"error": "Vehicle not found"}), 404
 
-        # Log the updated data
-        log_info(f"Vehicle with ID {vehicle_model_id} successfully updated.")
-        log_info(f"Updated vehicle data: {updated_vehicle_info}")
+        try:
+            log_info(f"Original vehicle data: {vehicle.serialize_to_dict()}")
 
-        # Generate a detailed email format for the updated vehicle details
-        email_subject = "Vehicle Details Updated"
-        email_body = generate_detailed_vehicle_email(
-            vehicle_info=updated_vehicle_info,
-            action="Update",
-            admin_email=RECEIVER_EMAIL
-        )
+            vehicle.vehicle_model = data.get('vehicle_model', vehicle.vehicle_model)
+            vehicle.vehicle_year = data.get('vehicle_year', vehicle.vehicle_year)
+            vehicle.engine_type = data.get('engine_type', vehicle.engine_type)
+            vehicle.transmission = data.get('transmission', vehicle.transmission)
+            vehicle.fuel_type = data.get('fuel_type', vehicle.fuel_type)
+            vehicle.body_type = data.get('body_type', vehicle.body_type)
+            vehicle.warranty_period_years = data.get('warranty_period_years', vehicle.warranty_period_years)
 
-        # Send the email with updated details
-        send_email(RECEIVER_EMAIL, email_subject, email_body)
+            session.commit()
 
-        # Return the updated vehicle details in a neat format
-        return jsonify({
-            "message": "Vehicle details updated successfully.",
-            "updated_vehicle_details": updated_vehicle_info,
-            "vehicle_model_id": vehicle_model_id
-        }), 200
+            updated_vehicle_info = vehicle.serialize_to_dict()
 
-    except SQLAlchemyError as e:
-        # Rollback the transaction in case of an error
+            log_info(f"Vehicle with ID {vehicle_model_id} successfully updated.")
+            log_info(f"Updated vehicle data: {updated_vehicle_info}")
+
+            email_subject = "Vehicle Details Updated"
+            email_body = generate_detailed_vehicle_email(
+                vehicle_info=updated_vehicle_info,
+                action="Update",
+                admin_email=RECEIVER_EMAIL
+            )
+
+            send_email(RECEIVER_EMAIL, email_subject, email_body)
+
+            return jsonify({
+                "message": "Vehicle details updated successfully.",
+                "updated_vehicle_details": updated_vehicle_info,
+                "vehicle_model_id": vehicle_model_id
+            }), 200
+
+        except SQLAlchemyError as e:
+            session.rollback()
+
+            log_error(f"SQL error occurred while updating vehicle with ID {vehicle_model_id}: {str(e)}")
+            send_email(
+                RECEIVER_EMAIL,
+                "Database Error",
+                f"Dear Team,\n\nAn error occurred while updating the vehicle with ID {vehicle_model_id}.\nError Details:\n{str(e)}\n\nBest regards,\nYour Team"
+            )
+            return jsonify({"error": "Database error", "details": str(e)}), 500
+
+    except ValueError as ve:
         session.rollback()
-
-        log_error(f"SQL error occurred while updating vehicle with ID {vehicle_model_id}: {str(e)}")
-        send_email(
-            RECEIVER_EMAIL,
-            "Database Error",
-            f"Dear Team,\n\nAn error occurred while updating the vehicle with ID {vehicle_model_id}.\nError Details:\n{str(e)}\n\nBest regards,\nYour Team"
-        )
-        return jsonify({"error": "Database error", "details": str(e)}), 500
+        log_error(f"ValueError: {str(ve)}")
+        return jsonify({"error": str(ve)}), 400
 
     except Exception as e:
-        # Handle unexpected errors
+        session.rollback()
         log_error(f"Unexpected error occurred while updating vehicle with ID {vehicle_model_id}: {str(e)}")
         send_email(
             RECEIVER_EMAIL,
@@ -1694,86 +1877,106 @@ def update_vehicle_details():
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
 
     finally:
+        session.close()
         log_info(f"End of update_vehicle_details function for vehicle_model_id={vehicle_model_id}")
 
 
 @app.route('/delete-vehicles', methods=['DELETE'])
+@otp_required  # Apply the OTP decorator
 def delete_vehicles():
     """
     Deletes vehicle details based on provided query parameters.
     Parameters can include vehicle_model_id, vehicle_model, vehicle_year, and other optional fields.
 
     Query Parameters:
-    - vehicle_model_id (str): The unique ID of the vehicle.
-    - vehicle_model (str): The vehicle model name.
-    - vehicle_year (int): The vehicle year.
-    - engine_type (str): The engine type of the vehicle.
-    - transmission (str): The transmission type of the vehicle.
-    - fuel_type (str): The fuel type of the vehicle.
-    - body_type (str): The body type of the vehicle.
-    - warranty_period_years (int): The warranty period in years.
-    - color (str): The color of the vehicle.
-    - model_variant (str): The model variant (e.g., Top, Mid, Base).
-    - tyre_company (str): The company of the tyre.
-    - tyre_size (str): The size of the tyre.
-    - start_type (str): The start type (e.g., Key, Push Start).
-    - sunroof_available (bool): Whether the sunroof is available.
-    - gear_type (str): The gear type (e.g., Gear, Gearless).
-    - vehicle_type (str): The type of vehicle (e.g., SUV, Sedan, Hatchback).
+    vehicle_model (str): The vehicle model name.
+    vehicle_year (int): The vehicle year.
+    engine_type (str): The engine type of the vehicle.
+    transmission (str): The transmission type of the vehicle.
+    fuel_type (str): The fuel type of the vehicle.
+    body_type (str): The body type of the vehicle.
+    warranty_period_years (int): The warranty period in years.
+    color (str): The color of the vehicle.
+    model_variant (str): The model variant (e.g., Top, Mid, Base).
+    tyre_company (str): The company of the tyre.
+    tyre_size (str): The size of the tyre.
+    start_type (str): The start type (e.g., Key, Push Start).
+    sunroof_available (bool): Whether the sunroof is available.
+    gear_type (str): The gear type (e.g., Gear, Gearless).
+    vehicle_type (str): The type of vehicle (e.g., SUV, Sedan, Hatchback).
 
     :return: JSON response with the number of vehicles deleted or error details.
     """
     log_info("Received request to delete vehicles with specified criteria.")
 
-    # Extract query parameters
-    criteria = {
-        'vehicle_model': request.args.get('vehicle_model'),
-        'vehicle_year': request.args.get('vehicle_year', type=int),
-        'engine_type': request.args.get('engine_type'),
-        'transmission': request.args.get('transmission'),
-        'fuel_type': request.args.get('fuel_type'),
-        'body_type': request.args.get('body_type'),
-        'warranty_period_years': request.args.get('warranty_period_years', type=int),
-        'color': request.args.get('color'),
-        'model_variant': request.args.get('model_variant'),
-        'tyre_company': request.args.get('tyre_company'),
-        'tyre_size': request.args.get('tyre_size'),
-        'start_type': request.args.get('start_type'),
-        'sunroof_available': request.args.get('sunroof_available', type=bool),
-        'gear_type': request.args.get('gear_type'),
-        'vehicle_type': request.args.get('vehicle_type')
-    }
+    try:
+        otp = request.args.get('otp')
+        email = request.args.get('email')
+
+        if not otp or not email:
+            error_message = "OTP and email are required as query parameters."
+            log_error(error_message)
+            return jsonify({"error": error_message}), 400
+
+        log_debug(f"Received OTP: {otp}, Email: {email}")
+
+        criteria = {
+            'vehicle_model': request.args.get('vehicle_model'),
+            'vehicle_year': request.args.get('vehicle_year', type=int),
+            'engine_type': request.args.get('engine_type'),
+            'transmission': request.args.get('transmission'),
+            'fuel_type': request.args.get('fuel_type'),
+            'body_type': request.args.get('body_type'),
+            'warranty_period_years': request.args.get('warranty_period_years', type=int),
+            'color': request.args.get('color'),
+            'model_variant': request.args.get('model_variant'),
+            'tyre_company': request.args.get('tyre_company'),
+            'tyre_size': request.args.get('tyre_size'),
+            'start_type': request.args.get('start_type'),
+            'sunroof_available': request.args.get('sunroof_available', type=lambda x: x.lower() == 'true'),
+            'gear_type': request.args.get('gear_type'),
+            'vehicle_type': request.args.get('vehicle_type')
+        }
+
+    except Exception as e:
+        session.rollback()
+        error_message = f"Error while extracting query parameters: {str(e)}"
+        log_error(error_message)
+        return jsonify({"error": error_message}), 400
 
     try:
-        # Build query based on provided parameters
+        otp = request.args.get('otp')
+        email = request.args.get('email')
+
+        if not otp or not email:
+            error_message = "OTP and email are required as query parameters."
+            log_error(error_message)
+            return jsonify({"error": error_message}), 400
+
+        log_debug(f"Received OTP: {otp}, Email: {email}")
+
         query = session.query(VehicleDetails)
         for key, value in criteria.items():
             if value is not None:
                 query = query.filter(getattr(VehicleDetails, key) == value)
 
-        # Retrieve all vehicles that match the criteria
         vehicles_to_delete = query.all()
 
-        # If no vehicles are found, return a message
         if not vehicles_to_delete:
             log_info("No vehicles found matching the criteria.")
             send_deletion_email(RECEIVER_EMAIL, 0, criteria, [])
             return jsonify({"message": "No vehicles found matching the criteria"}), 404
 
-        # Delete the vehicles
         for vehicle in vehicles_to_delete:
             session.delete(vehicle)
         session.commit()
 
-        # Log and notify about successful deletion
         num_deleted = len(vehicles_to_delete)
         log_info(f"{num_deleted} vehicles deleted successfully based on the provided criteria.")
 
-        # Prepare detailed email content
         send_deletion_email(RECEIVER_EMAIL, num_deleted, criteria,
                             [vehicle.serialize_to_dict() for vehicle in vehicles_to_delete])
 
-        # Return success message with the number of vehicles deleted and details
         return jsonify({
             "message": "Vehicle details deleted successfully.",
             "num_deleted": num_deleted,
@@ -1781,22 +1984,21 @@ def delete_vehicles():
         }), 200
 
     except SQLAlchemyError as e:
-        session.rollback()  # Rollback in case of error
-
-        # Log and notify about the error
+        session.rollback()
         log_error(f"Database error occurred while deleting vehicles: {str(e)}")
         send_deletion_email(RECEIVER_EMAIL, 0, criteria, [])
 
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
 
     except Exception as e:
-        # Handle any unexpected exceptions
+        session.rollback()
         log_error(f"Unexpected error occurred while deleting vehicles: {str(e)}")
         send_deletion_email(RECEIVER_EMAIL, 0, criteria, [])
 
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
 
     finally:
+        session.close()
         log_info("End of delete_vehicles function.")
 
 
@@ -1804,6 +2006,7 @@ def delete_vehicles():
 
 
 @app.route('/vehicle-purchase', methods=["POST"])
+@otp_required  # Apply the OTP decorator
 def handle_vehicle_purchase():
     """
     API to handle the purchase of a vehicle. It adds the vehicle purchase record, assigns the first 3 free services,
@@ -1817,7 +2020,6 @@ def handle_vehicle_purchase():
         opportunity_id = payload.get("opportunity_id")
         log_info(f"Opportunity ID: {opportunity_id}")
 
-        # Fetch the opportunity from the database
         opportunity = session.query(Opportunity).filter_by(opportunity_id=opportunity_id).first()
 
         if not opportunity:
@@ -1825,13 +2027,11 @@ def handle_vehicle_purchase():
             log_error(error_message)
             return jsonify({"error": error_message}), 404
 
-        # Check if the opportunity indicates a completed vehicle purchase
         if opportunity.probability != 100:
             error_message = f"Vehicle not purchased yet, probability is {opportunity.probability}%"
             log_info(error_message)
             return jsonify({"message": "Vehicle purchase not confirmed"}), 400
 
-        # Record the new vehicle purchase
         new_purchase = PurchasedVehicles(
             opportunity_id=opportunity_id,
             vehicle_model_id=opportunity.vehicle_model_id,
@@ -1842,38 +2042,32 @@ def handle_vehicle_purchase():
         session.commit()
         log_info(f"New vehicle purchase recorded: {new_purchase.vehicle_id}")
 
-        # Assign the first 3 free services to the vehicle
         new_purchase.add_free_services(session)
         session.commit()
         log_info(f"First three free services added for vehicle {new_purchase.vehicle_id}")
 
-        # Calculate and record the tax amount
         tax_amount = opportunity.amount * 0.05
         tax_record = calculate_taxes(new_purchase.vehicle_id, tax_amount)
         session.add(tax_record)
         session.commit()
         log_info(f"Tax record added for vehicle {new_purchase.vehicle_id}")
 
-        # Prepare vehicle info for emails
-        vehicle_info = new_purchase.serialize_to_dict()  # Serialize vehicle details
-        next_service_info = schedule_next_service(new_purchase)  # Schedule next service
-        free_services_left = 3  # Assuming 3 free services initially assigned
+        vehicle_info = new_purchase.serialize_to_dict()
+        next_service_info = schedule_next_service(new_purchase)
+        free_services_left = 3
 
-        # User email content preparation
-        insurance_info = {"insurance_policy": "Policy XYZ"}  # Placeholder for insurance details
+        insurance_info = {"insurance_policy": "Policy XYZ"}
         user_email_body = generate_user_vehicle_purchase_email(
             vehicle_info, tax_amount, insurance_info, next_service_info, free_services_left
         )
         notify_success("Vehicle Purchase Confirmation", user_email_body)
 
-        # Team email content preparation
-        opportunity_info = opportunity.serialize_to_dict()  # Serialize opportunity details
+        opportunity_info = opportunity.serialize_to_dict()
         team_email_body = generate_team_vehicle_purchase_email(
             vehicle_info, opportunity_info, tax_amount, next_service_info, free_services_left
         )
         notify_success("New Vehicle Purchase - Internal Notification", team_email_body)
 
-        # Return success message with details for response
         purchase_message = (f"Vehicle purchase registered successfully.\n\n"
                             f"Opportunity ID: {opportunity_id}\n"
                             f"Vehicle Model: {opportunity.vehicle_model}\n"
@@ -1911,16 +2105,13 @@ def get_purchased_vehicles():
     log_info(f"Processing query parameters: {request.args}")
 
     try:
-        # Get query parameters for filtering
         vehicle_id = request.args.get('vehicle_id')
         opportunity_id = request.args.get('opportunity_id')
 
         log_info(f"Filters applied: Vehicle ID: {vehicle_id}, Opportunity ID: {opportunity_id}")
 
-        # Start the query for purchased vehicles
         query = session.query(PurchasedVehicles)
 
-        # Apply filters if provided
         if vehicle_id:
             log_info(f"Applying filter: vehicle_id = {vehicle_id}")
             query = query.filter(PurchasedVehicles.vehicle_id == vehicle_id)
@@ -1932,16 +2123,13 @@ def get_purchased_vehicles():
         purchased_vehicles = query.all()
         log_info(f"Retrieved {len(purchased_vehicles)} purchased vehicles from the database")
 
-        # Prepare vehicle list for response
         purchased_vehicles_list = [vehicle.serialize_to_dict() for vehicle in purchased_vehicles]
 
-        # Prepare the result response
         result = {
             "total_purchased_vehicles": len(purchased_vehicles_list),
             "purchased_vehicles": purchased_vehicles_list,
         }
 
-        # Email notification for successful retrieval
         if purchased_vehicles_list:
             email_body = generate_success_email(purchased_vehicles_list)
             send_email(RECEIVER_EMAIL, "Purchased Vehicle Details Retrieved", email_body)
@@ -1950,20 +2138,20 @@ def get_purchased_vehicles():
         return jsonify(result), 200
 
     except SQLAlchemyError as e:
+        session.rollback()
         error_message = f"Error retrieving purchased vehicles: {str(e)}"
         log_error(error_message)
 
-        # Email notification for error
         error_email_body = generate_error_email(error_message)
         send_email(RECEIVER_EMAIL, "Error Retrieving Purchased Vehicles", error_email_body)
 
         return jsonify({"error": "Internal server error", "details": error_message}), 500
 
     except Exception as e:
+        session.rollback()
         error_message = f"Unexpected error occurred: {str(e)}"
         log_error(error_message)
 
-        # Email notification for unexpected error
         unexpected_error_email_body = generate_error_email(error_message)
         send_email(RECEIVER_EMAIL, "Unexpected Error Retrieving Purchased Vehicles",
                    unexpected_error_email_body)
@@ -1976,35 +2164,35 @@ def get_purchased_vehicles():
 
 
 @app.route('/update-purchased-vehicle', methods=["PUT"])
+@otp_required
 def update_purchased_vehicle():
     """
     API to update the details of a purchased vehicle.
     """
-    # Get vehicle ID from query parameters or body
-    vehicle_id = request.args.get('vehicle_id')
-    payload = request.get_json()
-
-    # If vehicle_id is not provided in query, look in the payload
-    if not vehicle_id and payload:
-        vehicle_id = payload.get('vehicle_id')
-
-    log_info(f"Received request to update vehicle with ID: {vehicle_id}")
-
-    if not vehicle_id:
-        error_message = "Vehicle ID not provided"
-        log_error(error_message)
-        return jsonify({"error": error_message}), 400
+    vehicle_id = None
+    payload = None
 
     try:
+        vehicle_id = request.args.get('vehicle_id')
+        payload = request.get_json()
+
+        if not vehicle_id and payload:
+            vehicle_id = payload.get('vehicle_id')
+
+        log_info(f"Received request to update vehicle with ID: {vehicle_id}")
+
+        if not vehicle_id:
+            error_message = "Vehicle ID not provided"
+            log_error(error_message)
+            return jsonify({"error": error_message}), 400
+
         log_debug(f"Request payload: {payload}")
 
-        # Fetch the existing vehicle record
         vehicle = session.query(PurchasedVehicles).filter_by(vehicle_id=vehicle_id).first()
 
         if not vehicle:
             error_message = f"Vehicle not found for ID: {vehicle_id}"
             log_error(error_message)
-            # Send failure email notification
             failure_email_body = generate_failure_email(error_message, vehicle_id=vehicle_id, payload=payload,
                                                         stage="Fetching vehicle")
             send_email(RECEIVER_EMAIL, "Error Updating Vehicle", failure_email_body)
@@ -2012,7 +2200,6 @@ def update_purchased_vehicle():
 
         updated_fields = {}
 
-        # Update vehicle details if provided
         if 'vehicle_color' in payload:
             updated_fields['vehicle_color'] = payload['vehicle_color']
             vehicle.vehicle_color = payload['vehicle_color']
@@ -2023,7 +2210,6 @@ def update_purchased_vehicle():
             vehicle.current_kilometers = payload['current_kilometers']
             log_info(f"Updated current kilometers to: {vehicle.current_kilometers}")
 
-        # Update services if provided
         if 'services' in payload:
             for service_data in payload['services']:
                 service_id = service_data.get('service_id')
@@ -2039,7 +2225,6 @@ def update_purchased_vehicle():
                         service.description = service_data.get('description', service.description)
                         log_info(f"Updated service ID {service_id}")
 
-        # Update taxes if provided
         if 'taxes' in payload:
             for tax_data in payload['taxes']:
                 tax_id = tax_data.get('tax_id')
@@ -2053,13 +2238,10 @@ def update_purchased_vehicle():
                         tax.due_date = tax_data.get('due_date', tax.due_date)
                         log_info(f"Updated tax ID {tax_id}")
 
-        # Commit the transaction
         session.commit()
         log_info(f"Vehicle with ID {vehicle_id} updated successfully")
 
-        # Prepare response
         response = vehicle.serialize_to_dict()
-        # Send email notification of success
         notify_vehicle_update_success("Vehicle Update Notification", response, updated_fields)
 
         return jsonify({
@@ -2072,19 +2254,28 @@ def update_purchased_vehicle():
         error_message = f"Error updating vehicle: {str(e)}"
         log_error(error_message)
 
-        # Send failure email notification with stage
         failure_email_body = generate_failure_email(error_message, vehicle_id=vehicle_id, payload=payload,
                                                     stage="Updating vehicle data")
         send_email(RECEIVER_EMAIL, "Error Updating Vehicle", failure_email_body)
 
         return jsonify({"error": "Internal server error", "details": error_message}), 500
 
+    except (ValueError, TypeError) as e:
+        session.rollback()
+        error_message = f"Invalid input: {str(e)}"
+        log_error(error_message)
+
+        failure_email_body = generate_failure_email(error_message, vehicle_id=vehicle_id, payload=payload,
+                                                    stage="Invalid input")
+        send_email(RECEIVER_EMAIL, "Error Updating Vehicle", failure_email_body)
+
+        return jsonify({"error": "Bad request", "details": error_message}), 400
+
     except Exception as e:
         session.rollback()
         error_message = f"Unexpected error occurred: {str(e)}"
         log_error(error_message)
 
-        # Send unexpected error email notification
         unexpected_error_email_body = generate_failure_email(error_message, vehicle_id=vehicle_id, payload=payload,
                                                              stage="Unknown")
         send_email(RECEIVER_EMAIL, "Unexpected Error Updating Vehicle", unexpected_error_email_body)
@@ -2097,14 +2288,25 @@ def update_purchased_vehicle():
 
 
 @app.route('/delete-purchased-vehicle', methods=["DELETE"])
+@otp_required
 def delete_purchased_vehicle():
     """
     API to delete a purchased vehicle based on vehicle ID.
     """
-    vehicle_id = request.args.get('vehicle_id')
-    log_info(f"Received request to delete vehicle with ID: {vehicle_id}")
-
+    vehicle_id = None
     try:
+        vehicle_id = request.args.get('vehicle_id')
+        log_info(f"Received request to delete vehicle with ID: {vehicle_id}")
+
+        otp = request.args.get('otp')
+        email = request.args.get('email')
+
+        if not otp or not email:
+            error_message = "OTP and email are required as query parameters."
+            log_error(error_message)
+            return jsonify({"error": error_message}), 400
+
+        log_debug(f"Received OTP: {otp}, Email: {email}")
         vehicle = session.query(PurchasedVehicles).filter_by(vehicle_id=vehicle_id).first()
 
         if not vehicle:
@@ -2160,6 +2362,7 @@ def delete_purchased_vehicle():
 # --------------------------------------------- TAXES TABLE ------------------------------------------------------------
 
 @app.route('/create-tax', methods=["POST"])
+@otp_required
 def create_tax():
     """
     API to create a new tax record for a vehicle.
@@ -2301,6 +2504,7 @@ def get_tax():
 
 
 @app.route('/update-tax', methods=["PUT"])
+@otp_required
 def update_tax():
     """
     API to update an existing tax record by tax_id passed in the request body.
@@ -2362,17 +2566,26 @@ def update_tax():
 
 
 @app.route('/delete-tax', methods=["DELETE"])
+@otp_required
 def delete_tax():
     """
     API to delete a tax record by tax_id passed in query parameters.
     Sends detailed email notifications with deletion time and full details
     about the deleted tax record.
     """
+
     try:
         tax_id = request.args.get('tax_id')
+        email = request.args.get('email')
+        otp = request.args.get('otp')
 
         if not tax_id:
             error_message = "tax_id is required in query parameters"
+            log_error(error_message)
+            return jsonify({"error": error_message}), 400
+
+        if not email or not otp:
+            error_message = "Email and OTP are required as query parameters"
             log_error(error_message)
             return jsonify({"error": error_message}), 400
 
@@ -2427,6 +2640,7 @@ def delete_tax():
 
 
 @app.route('/vehicle-service', methods=["POST"])
+@otp_required
 def create_vehicle_service():
     """
     API to create a new vehicle service record.
@@ -2534,6 +2748,7 @@ def get_vehicle_service():
             }), 200
 
     except SQLAlchemyError as e:
+        session.rollback()
         error_message = f"Error fetching vehicle service: {str(e)}"
         log_error(error_message)
         send_error_email(RECEIVER_EMAIL, error_message, "get_vehicle_service")
@@ -2544,6 +2759,7 @@ def get_vehicle_service():
 
 
 @app.route('/update-vehicle-service', methods=["PUT"])
+@otp_required
 def update_vehicle_service():
     """
     API to update an existing vehicle service record by service_id.
@@ -2599,12 +2815,22 @@ def update_vehicle_service():
 
 
 @app.route('/vehicle-service', methods=["DELETE"])
+@otp_required
 def delete_vehicle_service():
     """
     API to delete a vehicle service record by service_id.
     """
     try:
-        # Get service_id from query parameters
+        otp = request.args.get('otp')
+        email = request.args.get('email')
+
+        if not otp or not email:
+            error_message = "OTP and email are required as query parameters."
+            log_error(error_message)
+            return jsonify({"error": error_message}), 400
+
+        log_debug(f"Received OTP: {otp}, Email: {email}")
+
         service_id = request.args.get('service_id')
 
         if not service_id:
@@ -2613,7 +2839,6 @@ def delete_vehicle_service():
             send_error_email(RECEIVER_EMAIL, error_message, "delete_vehicle_service")
             return jsonify({"error": error_message}), 400
 
-        # Fetch the service record
         service_record = session.query(VehicleServices).filter_by(service_id=service_id).first()
 
         if not service_record:
@@ -2622,10 +2847,8 @@ def delete_vehicle_service():
             send_error_email(RECEIVER_EMAIL, error_message, "delete_vehicle_service")
             return jsonify({"error": error_message}), 404
 
-        # Capture the service details before deletion
         deleted_record_details = service_record.serialize_to_dict()
 
-        # Delete the record
         session.delete(service_record)
         session.commit()
 

@@ -12731,3 +12731,431 @@ WHERE otp_store.email = %(email_1)s ORDER BY otp_store.timestamp DESC
 2024-10-15 11:45:28,237 - ERROR - OTP validation failed: OTP for komalsaikiran05@gmail.com has expired.
 2024-10-15 11:45:28,237 - INFO - ROLLBACK
 2024-10-15 11:45:28,238 - INFO - 127.0.0.1 - - [15/Oct/2024 11:45:28] "[31m[1mDELETE /delete-account?account_id=acc1234 HTTP/1.1[0m" 400 -
+2024-10-15 11:48:30,442 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 11:48:30,615 - INFO -  * Restarting with stat
+2024-10-15 11:48:31,654 - WARNING -  * Debugger is active!
+2024-10-15 11:48:31,657 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 11:50:18,429 - INFO - BEGIN (implicit)
+2024-10-15 11:50:18,432 - INFO - INSERT INTO otp_store (email, otp, timestamp) VALUES (%(email)s, %(otp)s, %(timestamp)s) RETURNING otp_store.id
+2024-10-15 11:50:18,433 - INFO - [generated in 0.00051s] {'email': 'komalsaikiran05@gmail.com', 'otp': '557007', 'timestamp': datetime.datetime(2024, 10, 15, 11, 50, 18, 279163)}
+2024-10-15 11:50:18,440 - INFO - COMMIT
+2024-10-15 11:50:22,147 - INFO - 127.0.0.1 - - [15/Oct/2024 11:50:22] "POST /generate-otp HTTP/1.1" 200 -
+2024-10-15 11:50:37,988 - ERROR - OTP validation failed: Email and OTP are required.
+2024-10-15 11:50:37,989 - INFO - 127.0.0.1 - - [15/Oct/2024 11:50:37] "[31m[1mPOST /add-dealer HTTP/1.1[0m" 400 -
+2024-10-15 11:51:35,867 - INFO - BEGIN (implicit)
+2024-10-15 11:51:35,871 - INFO - SELECT otp_store.id AS otp_store_id, otp_store.email AS otp_store_email, otp_store.otp AS otp_store_otp, otp_store.timestamp AS otp_store_timestamp 
+FROM otp_store 
+WHERE otp_store.email = %(email_1)s ORDER BY otp_store.timestamp DESC 
+ LIMIT %(param_1)s
+2024-10-15 11:51:35,872 - INFO - [generated in 0.00048s] {'email_1': 'komalsaikiran05@gmail.com', 'param_1': 1}
+2024-10-15 11:51:35,877 - INFO - OTP validation successful for komalsaikiran05@gmail.com.
+2024-10-15 11:51:35,877 - INFO - Received request to add new dealer
+2024-10-15 11:51:35,878 - DEBUG - Request payload: {'dealer_code': 'Dealer12', 'opportunity_owner': 'Kiran', 'otp': '557007', 'email': 'komalsaikiran05@gmail.com'}
+2024-10-15 11:51:35,880 - INFO - INSERT INTO dealer (dealer_id, dealer_code, opportunity_owner) VALUES (%(dealer_id)s, %(dealer_code)s, %(opportunity_owner)s)
+2024-10-15 11:51:35,880 - INFO - [generated in 0.00056s] {'dealer_id': 'bac69055-8abd-11ef-abc6-a07cf578aa59', 'dealer_code': 'Dealer12', 'opportunity_owner': 'Kiran'}
+2024-10-15 11:51:35,887 - INFO - COMMIT
+2024-10-15 11:51:35,956 - INFO - BEGIN (implicit)
+2024-10-15 11:51:35,958 - INFO - SELECT dealer.dealer_id AS dealer_dealer_id, dealer.dealer_code AS dealer_dealer_code, dealer.opportunity_owner AS dealer_opportunity_owner 
+FROM dealer 
+WHERE dealer.dealer_id = %(pk_1)s
+2024-10-15 11:51:35,958 - INFO - [generated in 0.00075s] {'pk_1': 'bac69055-8abd-11ef-abc6-a07cf578aa59'}
+2024-10-15 11:51:35,963 - INFO - Dealer added successfully: bac69055-8abd-11ef-abc6-a07cf578aa59
+2024-10-15 11:51:39,492 - INFO - End of add_dealer function
+2024-10-15 11:51:39,493 - INFO - ROLLBACK
+2024-10-15 11:51:39,496 - INFO - 127.0.0.1 - - [15/Oct/2024 11:51:39] "[35m[1mPOST /add-dealer HTTP/1.1[0m" 201 -
+2024-10-15 11:52:34,779 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 11:52:34,986 - INFO -  * Restarting with stat
+2024-10-15 11:52:36,218 - WARNING -  * Debugger is active!
+2024-10-15 11:52:36,221 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 11:53:15,235 - INFO - BEGIN (implicit)
+2024-10-15 11:53:15,242 - INFO - SELECT otp_store.id AS otp_store_id, otp_store.email AS otp_store_email, otp_store.otp AS otp_store_otp, otp_store.timestamp AS otp_store_timestamp 
+FROM otp_store 
+WHERE otp_store.email = %(email_1)s ORDER BY otp_store.timestamp DESC 
+ LIMIT %(param_1)s
+2024-10-15 11:53:15,243 - INFO - [generated in 0.00066s] {'email_1': 'komalsaikiran05@gmail.com', 'param_1': 1}
+2024-10-15 11:53:15,247 - INFO - OTP validation successful for komalsaikiran05@gmail.com.
+2024-10-15 11:53:15,247 - INFO - Received request to update a dealer
+2024-10-15 11:53:15,247 - DEBUG - Data received for update: dealer_id=d0a73dc8-2e30-4546-b124-8575e9e1b799, dealer_code=DEALER555, opportunity_owner=Komal Sai
+2024-10-15 11:53:15,251 - INFO - SELECT dealer.dealer_id AS dealer_dealer_id, dealer.dealer_code AS dealer_dealer_code, dealer.opportunity_owner AS dealer_opportunity_owner 
+FROM dealer 
+WHERE dealer.dealer_id = %(dealer_id_1)s 
+ LIMIT %(param_1)s
+2024-10-15 11:53:15,251 - INFO - [generated in 0.00036s] {'dealer_id_1': 'd0a73dc8-2e30-4546-b124-8575e9e1b799', 'param_1': 1}
+2024-10-15 11:53:15,255 - INFO - COMMIT
+2024-10-15 11:53:15,338 - INFO - BEGIN (implicit)
+2024-10-15 11:53:15,341 - INFO - SELECT dealer.dealer_id AS dealer_dealer_id, dealer.dealer_code AS dealer_dealer_code, dealer.opportunity_owner AS dealer_opportunity_owner 
+FROM dealer 
+WHERE dealer.dealer_id = %(pk_1)s
+2024-10-15 11:53:15,341 - INFO - [generated in 0.00041s] {'pk_1': UUID('d0a73dc8-2e30-4546-b124-8575e9e1b799')}
+2024-10-15 11:53:15,344 - INFO - Dealer updated successfully.
+
+Updated Dealer ID: d0a73dc8-2e30-4546-b124-8575e9e1b799
+Updated Dealer Code: DEALER555
+Updated Opportunity Owner: Komal Sai
+2024-10-15 11:53:19,318 - INFO - End of update_dealer function
+2024-10-15 11:53:19,319 - INFO - ROLLBACK
+2024-10-15 11:53:19,321 - INFO - 127.0.0.1 - - [15/Oct/2024 11:53:19] "PUT /update-dealer HTTP/1.1" 200 -
+2024-10-15 11:53:51,174 - INFO - Received request to delete a dealer
+2024-10-15 11:53:51,174 - DEBUG - Dealer ID: , Dealer Code: None, Opportunity Owner: None
+2024-10-15 11:53:51,175 - ERROR - At least one of 'dealer_id', 'dealer_code', or 'opportunity_owner' must be provided.
+2024-10-15 11:53:54,859 - INFO - End of delete_dealer function
+2024-10-15 11:53:54,860 - INFO - 127.0.0.1 - - [15/Oct/2024 11:53:54] "[31m[1mDELETE /delete-single-dealer?dealer_id HTTP/1.1[0m" 400 -
+2024-10-15 11:55:40,926 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 11:55:41,082 - INFO -  * Restarting with stat
+2024-10-15 11:55:42,069 - WARNING -  * Debugger is active!
+2024-10-15 11:55:42,072 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 11:58:30,318 - INFO - BEGIN (implicit)
+2024-10-15 11:58:30,327 - INFO - SELECT otp_store.id AS otp_store_id, otp_store.email AS otp_store_email, otp_store.otp AS otp_store_otp, otp_store.timestamp AS otp_store_timestamp 
+FROM otp_store 
+WHERE otp_store.email = %(email_1)s ORDER BY otp_store.timestamp DESC 
+ LIMIT %(param_1)s
+2024-10-15 11:58:30,328 - INFO - [generated in 0.00074s] {'email_1': 'komalsaikiran05@gmail.com', 'param_1': 1}
+2024-10-15 11:58:30,335 - ERROR - OTP validation failed: OTP for komalsaikiran05@gmail.com has expired.
+2024-10-15 11:58:30,336 - INFO - ROLLBACK
+2024-10-15 11:58:30,339 - INFO - 127.0.0.1 - - [15/Oct/2024 11:58:30] "[31m[1mDELETE /delete-single-dealer?dealer_id HTTP/1.1[0m" 400 -
+2024-10-15 12:03:58,454 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 12:03:58,614 - INFO -  * Restarting with stat
+2024-10-15 12:03:59,918 - WARNING -  * Debugger is active!
+2024-10-15 12:03:59,921 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 12:04:22,984 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 12:04:23,131 - INFO -  * Restarting with stat
+2024-10-15 12:04:24,059 - WARNING -  * Debugger is active!
+2024-10-15 12:04:24,062 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 12:07:00,592 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 12:07:00,765 - INFO -  * Restarting with stat
+2024-10-15 12:07:01,835 - WARNING -  * Debugger is active!
+2024-10-15 12:07:01,838 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 12:10:41,968 - INFO - BEGIN (implicit)
+2024-10-15 12:10:41,972 - INFO - SELECT otp_store.id AS otp_store_id, otp_store.email AS otp_store_email, otp_store.otp AS otp_store_otp, otp_store.timestamp AS otp_store_timestamp 
+FROM otp_store 
+WHERE otp_store.email = %(email_1)s ORDER BY otp_store.timestamp DESC 
+ LIMIT %(param_1)s
+2024-10-15 12:10:41,972 - INFO - [generated in 0.00051s] {'email_1': 'komalsaikiran05@gmail.com', 'param_1': 1}
+2024-10-15 12:10:41,977 - ERROR - OTP validation failed: OTP for komalsaikiran05@gmail.com has expired.
+2024-10-15 12:10:41,977 - INFO - ROLLBACK
+2024-10-15 12:10:41,978 - INFO - 127.0.0.1 - - [15/Oct/2024 12:10:41] "[31m[1mPOST /new-customer HTTP/1.1[0m" 400 -
+2024-10-15 12:12:24,480 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 12:12:24,686 - INFO -  * Restarting with stat
+2024-10-15 12:12:25,967 - WARNING -  * Debugger is active!
+2024-10-15 12:12:25,970 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 12:14:06,132 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 12:14:06,302 - INFO -  * Restarting with stat
+2024-10-15 12:14:07,398 - WARNING -  * Debugger is active!
+2024-10-15 12:14:07,401 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 12:17:10,870 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 12:17:11,024 - INFO -  * Restarting with stat
+2024-10-15 12:17:12,083 - WARNING -  * Debugger is active!
+2024-10-15 12:17:12,086 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 12:19:17,474 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 12:19:17,662 - INFO -  * Restarting with stat
+2024-10-15 12:19:18,675 - WARNING -  * Debugger is active!
+2024-10-15 12:19:18,678 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 12:21:31,147 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 12:21:31,278 - INFO -  * Restarting with stat
+2024-10-15 12:21:32,215 - WARNING -  * Debugger is active!
+2024-10-15 12:21:32,218 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 12:23:38,736 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 12:23:38,929 - INFO -  * Restarting with stat
+2024-10-15 12:23:39,997 - WARNING -  * Debugger is active!
+2024-10-15 12:23:40,001 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 14:51:39,282 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 14:51:39,396 - INFO -  * Restarting with stat
+2024-10-15 14:51:40,723 - WARNING -  * Debugger is active!
+2024-10-15 14:51:40,726 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 14:52:47,185 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 14:52:47,392 - INFO -  * Restarting with stat
+2024-10-15 14:52:48,404 - WARNING -  * Debugger is active!
+2024-10-15 14:52:48,407 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 15:01:03,807 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 15:01:03,950 - INFO -  * Restarting with stat
+2024-10-15 15:01:05,368 - WARNING -  * Debugger is active!
+2024-10-15 15:01:05,372 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 15:01:57,177 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 15:01:57,290 - INFO -  * Restarting with stat
+2024-10-15 15:01:58,141 - WARNING -  * Debugger is active!
+2024-10-15 15:01:58,145 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 15:10:44,893 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 15:10:45,000 - INFO -  * Restarting with stat
+2024-10-15 15:10:45,833 - WARNING -  * Debugger is active!
+2024-10-15 15:10:45,836 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 15:13:04,838 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 15:13:05,031 - INFO -  * Restarting with stat
+2024-10-15 15:13:05,886 - WARNING -  * Debugger is active!
+2024-10-15 15:13:05,890 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 15:20:22,527 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 15:20:22,701 - INFO -  * Restarting with stat
+2024-10-15 15:20:23,679 - WARNING -  * Debugger is active!
+2024-10-15 15:20:23,682 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 15:21:56,655 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 15:21:56,774 - INFO -  * Restarting with stat
+2024-10-15 15:21:57,686 - WARNING -  * Debugger is active!
+2024-10-15 15:21:57,691 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 15:22:17,286 - INFO - Received request to update vehicle with ID: 19976398-7731-11ef-a551-923fc78ed5c1
+2024-10-15 15:22:17,286 - DEBUG - Request payload: {'vehicle_color': 'Red', 'current_kilometers': 45000, 'services': [{'service_id': '19ad2316-7731-11ef-ab8c-923fc78ed5c1', 'service_type': 'Oil Change', 'kilometers_at_service': 45000, 'description': 'Changed engine oil and filters'}], 'taxes': [{'tax_id': 501, 'tax_amount': 1200, 'tax_type': 'Road Tax', 'due_date': '2025-12-31'}]}
+2024-10-15 15:22:17,365 - INFO - BEGIN (implicit)
+2024-10-15 15:22:17,367 - INFO - SELECT purchased_vehicles.vehicle_id AS purchased_vehicles_vehicle_id, purchased_vehicles.opportunity_id AS purchased_vehicles_opportunity_id, purchased_vehicles.purchase_date AS purchased_vehicles_purchase_date, purchased_vehicles.vehicle_model_id AS purchased_vehicles_vehicle_model_id, purchased_vehicles.vehicle_color AS purchased_vehicles_vehicle_color, purchased_vehicles.current_kilometers AS purchased_vehicles_current_kilometers 
+FROM purchased_vehicles 
+WHERE purchased_vehicles.vehicle_id = %(vehicle_id_1)s 
+ LIMIT %(param_1)s
+2024-10-15 15:22:17,367 - INFO - [generated in 0.00021s] {'vehicle_id_1': '19976398-7731-11ef-a551-923fc78ed5c1', 'param_1': 1}
+2024-10-15 15:22:17,391 - INFO - Updated vehicle color to: Red
+2024-10-15 15:22:17,391 - INFO - Updated current kilometers to: 45000
+2024-10-15 15:22:17,393 - INFO - UPDATE purchased_vehicles SET current_kilometers=%(current_kilometers)s WHERE purchased_vehicles.vehicle_id = %(purchased_vehicles_vehicle_id)s
+2024-10-15 15:22:17,393 - INFO - [generated in 0.00023s] {'current_kilometers': 45000, 'purchased_vehicles_vehicle_id': UUID('19976398-7731-11ef-a551-923fc78ed5c1')}
+2024-10-15 15:22:17,413 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services 
+WHERE vehicle_services.service_id = %(service_id_1)s AND vehicle_services.vehicle_id = %(vehicle_id_1)s 
+ LIMIT %(param_1)s
+2024-10-15 15:22:17,413 - INFO - [generated in 0.00027s] {'service_id_1': '19ad2316-7731-11ef-ab8c-923fc78ed5c1', 'vehicle_id_1': '19976398-7731-11ef-a551-923fc78ed5c1', 'param_1': 1}
+2024-10-15 15:22:17,416 - INFO - Updated service ID 19ad2316-7731-11ef-ab8c-923fc78ed5c1
+2024-10-15 15:22:17,417 - INFO - UPDATE vehicle_services SET service_type=%(service_type)s, kilometers_at_service=%(kilometers_at_service)s, description=%(description)s WHERE vehicle_services.service_id = %(vehicle_services_service_id)s
+2024-10-15 15:22:17,417 - INFO - [generated in 0.00017s] {'service_type': 'Oil Change', 'kilometers_at_service': 45000, 'description': 'Changed engine oil and filters', 'vehicle_services_service_id': UUID('19ad2316-7731-11ef-ab8c-923fc78ed5c1')}
+2024-10-15 15:22:17,419 - INFO - SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes 
+WHERE taxes.tax_id = %(tax_id_1)s AND taxes.vehicle_id = %(vehicle_id_1)s 
+ LIMIT %(param_1)s
+2024-10-15 15:22:17,419 - INFO - [generated in 0.00024s] {'tax_id_1': 501, 'vehicle_id_1': '19976398-7731-11ef-a551-923fc78ed5c1', 'param_1': 1}
+2024-10-15 15:22:17,430 - INFO - ROLLBACK
+2024-10-15 15:22:17,431 - ERROR - Error updating vehicle: (psycopg2.errors.UndefinedFunction) operator does not exist: character varying = integer
+LINE 3: WHERE taxes.tax_id = 501 AND taxes.vehicle_id = '19976398-77...
+                           ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+
+[SQL: SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes 
+WHERE taxes.tax_id = %(tax_id_1)s AND taxes.vehicle_id = %(vehicle_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'tax_id_1': 501, 'vehicle_id_1': '19976398-7731-11ef-a551-923fc78ed5c1', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-10-15 15:22:21,496 - INFO - End of update_purchased_vehicle function
+2024-10-15 15:22:21,498 - INFO - 127.0.0.1 - - [15/Oct/2024 15:22:21] "[35m[1mPUT /update-purchased-vehicle?vehicle_id=19976398-7731-11ef-a551-923fc78ed5c1 HTTP/1.1[0m" 500 -
+2024-10-15 15:24:24,291 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 15:24:24,440 - INFO -  * Restarting with stat
+2024-10-15 15:24:25,313 - WARNING -  * Debugger is active!
+2024-10-15 15:24:25,316 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 15:26:21,215 - INFO - BEGIN (implicit)
+2024-10-15 15:26:21,219 - INFO - SELECT otp_store.id AS otp_store_id, otp_store.email AS otp_store_email, otp_store.otp AS otp_store_otp, otp_store.timestamp AS otp_store_timestamp 
+FROM otp_store 
+WHERE otp_store.email = %(email_1)s ORDER BY otp_store.timestamp DESC 
+ LIMIT %(param_1)s
+2024-10-15 15:26:21,219 - INFO - [generated in 0.00036s] {'email_1': 'komalsaikiran05@gmail.com', 'param_1': 1}
+2024-10-15 15:26:21,229 - ERROR - OTP validation failed: OTP for komalsaikiran05@gmail.com has expired.
+2024-10-15 15:26:21,230 - INFO - ROLLBACK
+2024-10-15 15:26:21,231 - INFO - 127.0.0.1 - - [15/Oct/2024 15:26:21] "[31m[1mPUT /update-purchased-vehicle?vehicle_id=19976398-7731-11ef-a551-923fc78ed5c1 HTTP/1.1[0m" 400 -
+2024-10-15 15:26:33,723 - INFO - BEGIN (implicit)
+2024-10-15 15:26:33,724 - INFO - INSERT INTO otp_store (email, otp, timestamp) VALUES (%(email)s, %(otp)s, %(timestamp)s) RETURNING otp_store.id
+2024-10-15 15:26:33,725 - INFO - [generated in 0.00044s] {'email': 'komalsaikiran05@gmail.com', 'otp': '578231', 'timestamp': datetime.datetime(2024, 10, 15, 15, 26, 33, 652495)}
+2024-10-15 15:26:33,734 - INFO - COMMIT
+2024-10-15 15:26:33,735 - INFO - Generated OTP for komalsaikiran05@gmail.com: 578231
+2024-10-15 15:26:36,637 - INFO - End of generate_otp function for email=komalsaikiran05@gmail.com
+2024-10-15 15:26:36,638 - INFO - 127.0.0.1 - - [15/Oct/2024 15:26:36] "POST /generate-otp HTTP/1.1" 200 -
+2024-10-15 15:26:49,180 - INFO - BEGIN (implicit)
+2024-10-15 15:26:49,180 - INFO - SELECT otp_store.id AS otp_store_id, otp_store.email AS otp_store_email, otp_store.otp AS otp_store_otp, otp_store.timestamp AS otp_store_timestamp 
+FROM otp_store 
+WHERE otp_store.email = %(email_1)s ORDER BY otp_store.timestamp DESC 
+ LIMIT %(param_1)s
+2024-10-15 15:26:49,180 - INFO - [cached since 27.96s ago] {'email_1': 'komalsaikiran05@gmail.com', 'param_1': 1}
+2024-10-15 15:26:49,185 - INFO - OTP validation successful for komalsaikiran05@gmail.com.
+2024-10-15 15:26:49,185 - INFO - Received request to update vehicle with ID: 19976398-7731-11ef-a551-923fc78ed5c1
+2024-10-15 15:26:49,185 - DEBUG - Request payload: {'vehicle_color': 'Red', 'current_kilometers': 45000, 'email': 'komalsaikiran05@gmail.com', 'otp': '578231', 'services': [{'service_id': '19ad2316-7731-11ef-ab8c-923fc78ed5c1', 'service_type': 'Oil Change', 'kilometers_at_service': 45000, 'description': 'Changed engine oil and filters'}], 'taxes': [{'tax_id': 501, 'tax_amount': 1200, 'tax_type': 'Road Tax', 'due_date': '2025-12-31'}]}
+2024-10-15 15:26:49,188 - INFO - SELECT purchased_vehicles.vehicle_id AS purchased_vehicles_vehicle_id, purchased_vehicles.opportunity_id AS purchased_vehicles_opportunity_id, purchased_vehicles.purchase_date AS purchased_vehicles_purchase_date, purchased_vehicles.vehicle_model_id AS purchased_vehicles_vehicle_model_id, purchased_vehicles.vehicle_color AS purchased_vehicles_vehicle_color, purchased_vehicles.current_kilometers AS purchased_vehicles_current_kilometers 
+FROM purchased_vehicles 
+WHERE purchased_vehicles.vehicle_id = %(vehicle_id_1)s 
+ LIMIT %(param_1)s
+2024-10-15 15:26:49,189 - INFO - [generated in 0.00072s] {'vehicle_id_1': '19976398-7731-11ef-a551-923fc78ed5c1', 'param_1': 1}
+2024-10-15 15:26:49,191 - INFO - Updated vehicle color to: Red
+2024-10-15 15:26:49,192 - INFO - Updated current kilometers to: 45000
+2024-10-15 15:26:49,194 - INFO - UPDATE purchased_vehicles SET current_kilometers=%(current_kilometers)s WHERE purchased_vehicles.vehicle_id = %(purchased_vehicles_vehicle_id)s
+2024-10-15 15:26:49,194 - INFO - [generated in 0.00038s] {'current_kilometers': 45000, 'purchased_vehicles_vehicle_id': UUID('19976398-7731-11ef-a551-923fc78ed5c1')}
+2024-10-15 15:26:49,199 - INFO - SELECT vehicle_services.service_id AS vehicle_services_service_id, vehicle_services.vehicle_id AS vehicle_services_vehicle_id, vehicle_services.service_date AS vehicle_services_service_date, vehicle_services.service_type AS vehicle_services_service_type, vehicle_services.kilometers_at_service AS vehicle_services_kilometers_at_service, vehicle_services.description AS vehicle_services_description 
+FROM vehicle_services 
+WHERE vehicle_services.service_id = %(service_id_1)s AND vehicle_services.vehicle_id = %(vehicle_id_1)s 
+ LIMIT %(param_1)s
+2024-10-15 15:26:49,199 - INFO - [generated in 0.00033s] {'service_id_1': '19ad2316-7731-11ef-ab8c-923fc78ed5c1', 'vehicle_id_1': '19976398-7731-11ef-a551-923fc78ed5c1', 'param_1': 1}
+2024-10-15 15:26:49,201 - INFO - Updated service ID 19ad2316-7731-11ef-ab8c-923fc78ed5c1
+2024-10-15 15:26:49,202 - INFO - UPDATE vehicle_services SET service_type=%(service_type)s, kilometers_at_service=%(kilometers_at_service)s, description=%(description)s WHERE vehicle_services.service_id = %(vehicle_services_service_id)s
+2024-10-15 15:26:49,202 - INFO - [generated in 0.00018s] {'service_type': 'Oil Change', 'kilometers_at_service': 45000, 'description': 'Changed engine oil and filters', 'vehicle_services_service_id': UUID('19ad2316-7731-11ef-ab8c-923fc78ed5c1')}
+2024-10-15 15:26:49,205 - INFO - SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes 
+WHERE taxes.tax_id = %(tax_id_1)s AND taxes.vehicle_id = %(vehicle_id_1)s 
+ LIMIT %(param_1)s
+2024-10-15 15:26:49,205 - INFO - [generated in 0.00073s] {'tax_id_1': 501, 'vehicle_id_1': '19976398-7731-11ef-a551-923fc78ed5c1', 'param_1': 1}
+2024-10-15 15:26:49,209 - INFO - ROLLBACK
+2024-10-15 15:26:49,210 - ERROR - Error updating vehicle: (psycopg2.errors.UndefinedFunction) operator does not exist: character varying = integer
+LINE 3: WHERE taxes.tax_id = 501 AND taxes.vehicle_id = '19976398-77...
+                           ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+
+[SQL: SELECT taxes.tax_id AS taxes_tax_id, taxes.vehicle_id AS taxes_vehicle_id, taxes.tax_amount AS taxes_tax_amount, taxes.tax_type AS taxes_tax_type, taxes.due_date AS taxes_due_date 
+FROM taxes 
+WHERE taxes.tax_id = %(tax_id_1)s AND taxes.vehicle_id = %(vehicle_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'tax_id_1': 501, 'vehicle_id_1': '19976398-7731-11ef-a551-923fc78ed5c1', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-10-15 15:26:52,832 - INFO - End of update_purchased_vehicle function
+2024-10-15 15:26:52,833 - INFO - 127.0.0.1 - - [15/Oct/2024 15:26:52] "[35m[1mPUT /update-purchased-vehicle?vehicle_id=19976398-7731-11ef-a551-923fc78ed5c1 HTTP/1.1[0m" 500 -
+2024-10-15 15:31:20,988 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 15:31:21,140 - INFO -  * Restarting with stat
+2024-10-15 15:31:22,366 - WARNING -  * Debugger is active!
+2024-10-15 15:31:22,369 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 15:32:21,978 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 15:32:22,087 - INFO -  * Restarting with stat
+2024-10-15 15:32:22,918 - WARNING -  * Debugger is active!
+2024-10-15 15:32:22,921 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 15:34:46,673 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 15:34:46,845 - INFO -  * Restarting with stat
+2024-10-15 15:34:48,045 - WARNING -  * Debugger is active!
+2024-10-15 15:34:48,049 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 15:34:49,232 - INFO - BEGIN (implicit)
+2024-10-15 15:34:49,235 - INFO - SELECT otp_store.id AS otp_store_id, otp_store.email AS otp_store_email, otp_store.otp AS otp_store_otp, otp_store.timestamp AS otp_store_timestamp 
+FROM otp_store 
+WHERE otp_store.email = %(email_1)s ORDER BY otp_store.timestamp DESC 
+ LIMIT %(param_1)s
+2024-10-15 15:34:49,236 - INFO - [generated in 0.00024s] {'email_1': 'komalsaikiran05@gmail.com', 'param_1': 1}
+2024-10-15 15:34:49,240 - ERROR - OTP validation failed: OTP for komalsaikiran05@gmail.com has expired.
+2024-10-15 15:34:49,242 - INFO - ROLLBACK
+2024-10-15 15:34:49,244 - INFO - 127.0.0.1 - - [15/Oct/2024 15:34:49] "[31m[1mPUT /update-purchased-vehicle?vehicle_id=19976398-7731-11ef-a551-923fc78ed5c1 HTTP/1.1[0m" 400 -
+2024-10-15 15:35:58,114 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 15:35:58,257 - INFO -  * Restarting with stat
+2024-10-15 15:35:59,116 - WARNING -  * Debugger is active!
+2024-10-15 15:35:59,119 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 15:38:47,346 - INFO - BEGIN (implicit)
+2024-10-15 15:38:47,350 - INFO - SELECT otp_store.id AS otp_store_id, otp_store.email AS otp_store_email, otp_store.otp AS otp_store_otp, otp_store.timestamp AS otp_store_timestamp 
+FROM otp_store 
+WHERE otp_store.email = %(email_1)s ORDER BY otp_store.timestamp DESC 
+ LIMIT %(param_1)s
+2024-10-15 15:38:47,350 - INFO - [generated in 0.00039s] {'email_1': 'komalsaikiran05@gmail.com', 'param_1': 1}
+2024-10-15 15:38:47,353 - ERROR - OTP validation failed: OTP for komalsaikiran05@gmail.com has expired.
+2024-10-15 15:38:47,353 - INFO - ROLLBACK
+2024-10-15 15:38:47,355 - INFO - 127.0.0.1 - - [15/Oct/2024 15:38:47] "[31m[1mPUT /update-purchased-vehicle?vehicle_id=19976398-7731-11ef-a551-923fc78ed5c1 HTTP/1.1[0m" 400 -
+2024-10-15 15:49:22,578 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 15:49:22,694 - INFO -  * Restarting with stat
+2024-10-15 15:49:23,541 - WARNING -  * Debugger is active!
+2024-10-15 15:49:23,544 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 15:51:05,860 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 15:51:06,014 - INFO -  * Restarting with stat
+2024-10-15 15:51:06,943 - WARNING -  * Debugger is active!
+2024-10-15 15:51:06,946 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 15:53:16,893 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 15:53:17,048 - INFO -  * Restarting with stat
+2024-10-15 15:53:17,909 - WARNING -  * Debugger is active!
+2024-10-15 15:53:17,912 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 15:54:59,523 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 15:54:59,686 - INFO -  * Restarting with stat
+2024-10-15 15:55:00,742 - WARNING -  * Debugger is active!
+2024-10-15 15:55:00,745 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 15:57:57,470 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 15:57:57,576 - INFO -  * Restarting with stat
+2024-10-15 15:57:58,504 - WARNING -  * Debugger is active!
+2024-10-15 15:57:58,508 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 16:00:02,070 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 16:00:02,229 - INFO -  * Restarting with stat
+2024-10-15 16:00:03,237 - WARNING -  * Debugger is active!
+2024-10-15 16:00:03,241 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 16:01:32,614 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 16:01:32,736 - INFO -  * Restarting with stat
+2024-10-15 16:01:33,805 - WARNING -  * Debugger is active!
+2024-10-15 16:01:33,810 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 16:02:47,077 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 16:02:47,179 - INFO -  * Restarting with stat
+2024-10-15 16:02:48,017 - WARNING -  * Debugger is active!
+2024-10-15 16:02:48,021 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 16:03:18,534 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 16:03:18,699 - INFO -  * Restarting with stat
+2024-10-15 16:03:19,636 - WARNING -  * Debugger is active!
+2024-10-15 16:03:19,639 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 16:05:14,542 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 16:05:14,697 - INFO -  * Restarting with stat
+2024-10-15 16:05:15,579 - WARNING -  * Debugger is active!
+2024-10-15 16:05:15,582 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 16:10:37,254 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 16:10:37,391 - INFO -  * Restarting with stat
+2024-10-15 16:10:38,262 - WARNING -  * Debugger is active!
+2024-10-15 16:10:38,265 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 16:13:43,614 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 16:13:43,754 - INFO -  * Restarting with stat
+2024-10-15 16:13:45,820 - WARNING -  * Debugger is active!
+2024-10-15 16:13:45,824 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 16:15:29,005 - INFO - Received request to get all accounts
+2024-10-15 16:15:29,198 - INFO - BEGIN (implicit)
+2024-10-15 16:15:29,199 - INFO - SELECT account.account_id AS account_account_id, account.account_name AS account_account_name 
+FROM account
+2024-10-15 16:15:29,199 - INFO - [generated in 0.00020s] {}
+2024-10-15 16:15:29,207 - INFO - Fetched 14 accounts
+2024-10-15 16:15:32,837 - INFO - ROLLBACK
+2024-10-15 16:15:32,837 - INFO - End of get_all_accounts function
+2024-10-15 16:15:32,838 - INFO - 127.0.0.1 - - [15/Oct/2024 16:15:32] "GET /get-all-accounts HTTP/1.1" 200 -
+2024-10-15 16:15:54,811 - DEBUG - Starting new HTTP connection (1): 127.0.0.1:5000
+2024-10-15 16:15:54,813 - INFO - Received request to get all accounts
+2024-10-15 16:15:54,887 - INFO - BEGIN (implicit)
+2024-10-15 16:15:54,888 - INFO - SELECT account.account_id AS account_account_id, account.account_name AS account_account_name 
+FROM account
+2024-10-15 16:15:54,888 - INFO - [cached since 25.69s ago] {}
+2024-10-15 16:15:54,890 - INFO - Fetched 14 accounts
+2024-10-15 16:15:58,349 - INFO - ROLLBACK
+2024-10-15 16:15:58,350 - INFO - End of get_all_accounts function
+2024-10-15 16:15:58,351 - INFO - 127.0.0.1 - - [15/Oct/2024 16:15:58] "GET /get-all-accounts HTTP/1.1" 200 -
+2024-10-15 16:15:58,352 - DEBUG - http://127.0.0.1:5000 "GET /get-all-accounts HTTP/11" 200 1411
+2024-10-15 16:15:58,361 - INFO - 127.0.0.1 - - [15/Oct/2024 16:15:58] "POST /check-api-performance HTTP/1.1" 200 -
+2024-10-15 16:18:11,100 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 16:18:11,289 - INFO -  * Restarting with stat
+2024-10-15 16:18:12,735 - WARNING -  * Debugger is active!
+2024-10-15 16:18:12,739 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 16:19:16,491 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 16:19:16,644 - INFO -  * Restarting with stat
+2024-10-15 16:19:18,252 - WARNING -  * Debugger is active!
+2024-10-15 16:19:18,256 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 16:19:18,305 - INFO - Received request to check API performance for URL: http://127.0.0.1:5000/get-all-accounts
+2024-10-15 16:19:18,310 - INFO - Initial CPU: 0.0%, Initial Memory: 7597916160 bytes
+2024-10-15 16:19:18,318 - DEBUG - Starting new HTTP connection (1): 127.0.0.1:5000
+2024-10-15 16:19:18,320 - INFO - Received request to get all accounts
+2024-10-15 16:19:18,409 - INFO - BEGIN (implicit)
+2024-10-15 16:19:18,412 - INFO - SELECT account.account_id AS account_account_id, account.account_name AS account_account_name 
+FROM account
+2024-10-15 16:19:18,412 - INFO - [generated in 0.00034s] {}
+2024-10-15 16:19:18,416 - INFO - Fetched 14 accounts
+2024-10-15 16:19:21,642 - INFO - ROLLBACK
+2024-10-15 16:19:21,643 - INFO - End of get_all_accounts function
+2024-10-15 16:19:21,643 - INFO - 127.0.0.1 - - [15/Oct/2024 16:19:21] "GET /get-all-accounts HTTP/1.1" 200 -
+2024-10-15 16:19:21,644 - DEBUG - http://127.0.0.1:5000 "GET /get-all-accounts HTTP/11" 200 1411
+2024-10-15 16:19:21,651 - INFO - API performance check successful for URL: http://127.0.0.1:5000/get-all-accounts
+2024-10-15 16:19:21,651 - DEBUG - Performance metrics: {'url': 'http://127.0.0.1:5000/get-all-accounts', 'status_code': 200, 'response_time': 3.336231231689453, 'initial_cpu_usage': 0.0, 'final_cpu_usage': 3.4, 'memory_used': -36941824, 'response': {'Accounts': [{'account_id': 'hcl5678', 'account_name': 'HCL'}, {'account_id': 'wip123', 'account_name': 'Wipro'}, {'account_id': 'tec123', 'account_name': 'Tech'}, {'account_id': 'acc1234', 'account_name': 'ACCENTURE'}, {'account_id': 'Tec123', 'account_name': 'Technology'}, {'account_id': '4b876fbd-fada-4dfe-acae-f9ec5ad90916', 'account_name': 'Tech Innovators Pvt Ltd'}, {'account_id': '1df6e200-cce8-4224-abf3-a3964bcc8bb8', 'account_name': 'GreenTech Innovations'}, {'account_id': '696f20ac-f6af-42f6-afdb-fc7bb01f374f', 'account_name': 'Global Tech Enterprises'}, {'account_id': '28ed8e8b-6ecf-41fc-a995-e18d37a6c9d4', 'account_name': 'NextGen Healthcare Solutions'}, {'account_id': 'e41d9b10-04a3-4cce-b15a-1d521cbbc3c7', 'account_name': 'SmartHome Innovations'}, {'account_id': '5cd7d2be-0f6b-487e-85ee-bed08df56270', 'account_name': 'Tech Titans Inc.'}, {'account_id': 'Jag555', 'account_name': 'Jaguar Inc'}, {'account_id': '154a7337-908f-4334-b8d8-29d2fd800358', 'account_name': 'Jaguar Inc.'}, {'account_id': 'BMW555', 'account_name': 'BMW Inc'}], 'Total count of accounts': 14}}
+2024-10-15 16:19:24,936 - INFO - End of check_api_performance function
+2024-10-15 16:19:24,938 - INFO - 127.0.0.1 - - [15/Oct/2024 16:19:24] "POST /check-api-performance HTTP/1.1" 200 -
+2024-10-15 16:21:17,115 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 16:21:17,296 - INFO -  * Restarting with stat
+2024-10-15 16:21:18,633 - WARNING -  * Debugger is active!
+2024-10-15 16:21:18,636 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 17:37:26,406 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 17:37:27,296 - INFO -  * Restarting with stat
+2024-10-15 17:37:31,812 - WARNING -  * Debugger is active!
+2024-10-15 17:37:31,824 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 17:39:05,244 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 17:39:05,590 - INFO -  * Restarting with stat
+2024-10-15 17:39:09,173 - WARNING -  * Debugger is active!
+2024-10-15 17:39:09,179 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 17:39:54,342 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 17:39:54,618 - INFO -  * Restarting with stat
+2024-10-15 17:39:56,246 - WARNING -  * Debugger is active!
+2024-10-15 17:39:56,250 - INFO -  * Debugger PIN: 131-728-527
+2024-10-15 17:39:58,750 - INFO - Received request to check API performance for URL: http://127.0.0.1:5000/get-all-accounts
+2024-10-15 17:39:58,756 - INFO - Initial CPU: 0.0%, Initial Memory: 7871094784 bytes
+2024-10-15 17:39:58,768 - DEBUG - Starting new HTTP connection (1): 127.0.0.1:5000
+2024-10-15 17:39:58,772 - INFO - Received request to get all accounts
+2024-10-15 17:39:58,897 - INFO - BEGIN (implicit)
+2024-10-15 17:39:58,900 - INFO - SELECT account.account_id AS account_account_id, account.account_name AS account_account_name 
+FROM account
+2024-10-15 17:39:58,900 - INFO - [generated in 0.00029s] {}
+2024-10-15 17:39:58,912 - INFO - Fetched 14 accounts
+2024-10-15 17:40:03,328 - INFO - ROLLBACK
+2024-10-15 17:40:03,329 - INFO - End of get_all_accounts function
+2024-10-15 17:40:03,331 - INFO - 127.0.0.1 - - [15/Oct/2024 17:40:03] "GET /get-all-accounts HTTP/1.1" 200 -
+2024-10-15 17:40:03,333 - DEBUG - http://127.0.0.1:5000 "GET /get-all-accounts HTTP/11" 200 1411
+2024-10-15 17:40:03,346 - INFO - API performance check successful for URL: http://127.0.0.1:5000/get-all-accounts
+2024-10-15 17:40:03,349 - DEBUG - Performance metrics: {'url': 'http://127.0.0.1:5000/get-all-accounts', 'status_code': 200, 'response_time': 4.58216404914856, 'initial_cpu_usage': 0.0, 'final_cpu_usage': 4.3, 'memory_used': 6340608, 'response': {'Accounts': [{'account_id': 'hcl5678', 'account_name': 'HCL'}, {'account_id': 'wip123', 'account_name': 'Wipro'}, {'account_id': 'tec123', 'account_name': 'Tech'}, {'account_id': 'acc1234', 'account_name': 'ACCENTURE'}, {'account_id': 'Tec123', 'account_name': 'Technology'}, {'account_id': '4b876fbd-fada-4dfe-acae-f9ec5ad90916', 'account_name': 'Tech Innovators Pvt Ltd'}, {'account_id': '1df6e200-cce8-4224-abf3-a3964bcc8bb8', 'account_name': 'GreenTech Innovations'}, {'account_id': '696f20ac-f6af-42f6-afdb-fc7bb01f374f', 'account_name': 'Global Tech Enterprises'}, {'account_id': '28ed8e8b-6ecf-41fc-a995-e18d37a6c9d4', 'account_name': 'NextGen Healthcare Solutions'}, {'account_id': 'e41d9b10-04a3-4cce-b15a-1d521cbbc3c7', 'account_name': 'SmartHome Innovations'}, {'account_id': '5cd7d2be-0f6b-487e-85ee-bed08df56270', 'account_name': 'Tech Titans Inc.'}, {'account_id': 'Jag555', 'account_name': 'Jaguar Inc'}, {'account_id': '154a7337-908f-4334-b8d8-29d2fd800358', 'account_name': 'Jaguar Inc.'}, {'account_id': 'BMW555', 'account_name': 'BMW Inc'}], 'Total count of accounts': 14}}
+2024-10-15 17:40:07,426 - INFO - End of check_api_performance function
+2024-10-15 17:40:07,427 - INFO - 127.0.0.1 - - [15/Oct/2024 17:40:07] "POST /check-api-performance HTTP/1.1" 200 -
+2024-10-15 17:41:56,389 - INFO -  * Detected change in 'C:\\Users\\lenovo\\PycharmProjects\\salesforce_crm_project\\apps\\app.py', reloading
+2024-10-15 17:41:56,761 - INFO -  * Restarting with stat
+2024-10-15 17:42:00,445 - WARNING -  * Debugger is active!
+2024-10-15 17:42:00,455 - INFO -  * Debugger PIN: 131-728-527
