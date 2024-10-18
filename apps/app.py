@@ -57,30 +57,40 @@ app = Flask(__name__)
 # ------------------------------------CHECKS OTHER APIS PERFORMANCES ---------------------------------------------------
 @app.route('/check-api-performance', methods=['POST'])
 def check_api_performance():
-    """
-    API to check the performance of another API by measuring execution time,
-    CPU usage, and memory usage.
-    Sends email notifications on success and failure, and logs all events.
-    """
     try:
         payload = request.get_json()
-        if not payload or 'url' not in payload:
-            error_message = "URL is required to check API performance."
+        if not payload or 'url' not in payload or 'method' not in payload:
+            error_message = "URL and Method are required to check API performance."
             log_error(error_message)
             return jsonify({"error": error_message}), 400
 
         url = payload['url']
-        log_info(f"Received request to check API performance for URL: {url}")
+        method = payload['method'].upper()
+        data = payload.get('data', {})  # Get data from payload for PUT/POST requests
 
+        headers = {'Content-Type': 'application/json'}
+
+        # Measure performance
         initial_cpu = psutil.cpu_percent()
         initial_memory = psutil.virtual_memory().used
         start_time = time.time()
 
-        log_info(f"Initial CPU: {initial_cpu}%, Initial Memory: {initial_memory} bytes")
+        # Make the API request based on the method provided
+        if method == 'GET':
+            response = requests.get(url)
+        elif method == 'POST':
+            response = requests.post(url, json=data, headers=headers)
+        elif method == 'PUT':
+            response = requests.put(url, json=data, headers=headers)
+        elif method == 'DELETE':
+            response = requests.delete(url)
+        else:
+            error_message = f"Unsupported HTTP method: {method}"
+            log_error(error_message)
+            return jsonify({"error": error_message}), 400
 
-        response = requests.get(url)
+        # Measure performance end
         response.raise_for_status()
-
         end_time = time.time()
         execution_time = end_time - start_time
         final_cpu = psutil.cpu_percent()
@@ -94,21 +104,19 @@ def check_api_performance():
             "initial_cpu_usage": initial_cpu,
             "final_cpu_usage": final_cpu,
             "memory_used": memory_used,
-            "response": response.json()
+            "response": response.json() if response.content else {}
         }
 
+        # Log and email performance results
         log_info(f"API performance check successful for URL: {url}")
-        log_debug(f"Performance metrics: {performance_metrics}")
-
         email_subject = f"API Performance Check Successful for URL: {url}"
-        email_content = (
-            f"API Performance Metrics for URL: {url}\n\n"
-            f"Status Code: {performance_metrics['status_code']}\n"
-            f"Response Time: {performance_metrics['response_time']} seconds\n"
-            f"Initial CPU Usage: {performance_metrics['initial_cpu_usage']}%\n"
-            f"Final CPU Usage: {performance_metrics['final_cpu_usage']}%\n"
-            f"Memory Used: {performance_metrics['memory_used']} bytes\n"
-        )
+        email_content = f"API Performance Metrics for URL: {url}\n\n" + \
+                        f"Status Code: {performance_metrics['status_code']}\n" + \
+                        f"Response Time: {performance_metrics['response_time']} seconds\n" + \
+                        f"Initial CPU Usage: {performance_metrics['initial_cpu_usage']}%\n" + \
+                        f"Final CPU Usage: {performance_metrics['final_cpu_usage']}%\n" + \
+                        f"Memory Used: {performance_metrics['memory_used']} bytes\n"
+
         send_email(RECEIVER_EMAIL, email_subject, email_content)
 
         return jsonify(performance_metrics), 200
@@ -116,22 +124,17 @@ def check_api_performance():
     except requests.exceptions.RequestException as e:
         error_message = f"Failed to call the target API: {str(e)}"
         log_error(error_message)
-
         send_email(RECEIVER_EMAIL, "API Performance Check Failed", error_message)
-
         return jsonify({"error": error_message}), 500
 
     except Exception as e:
         error_message = f"An error occurred: {str(e)}"
         log_error(error_message)
-
         send_email(RECEIVER_EMAIL, "API Performance Check Error", error_message)
-
         return jsonify({"error": error_message}), 500
 
     finally:
         log_info("End of check_api_performance function")
-
 
 # ---------------------------------------- OTP GENERATOR API -----------------------------------------------------------
 
