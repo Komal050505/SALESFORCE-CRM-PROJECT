@@ -176,7 +176,7 @@ def otp_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         payload = request.get_json()
-
+        email = None
         try:
             if not payload or 'email' not in payload or 'otp' not in payload:
                 log_error("OTP validation failed: Email and OTP are required.")

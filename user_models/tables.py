@@ -20,6 +20,7 @@ Base = declarative_base()
 # --------------------------------------- OTP STORE TABLE --------------------------------------------------------------
 
 
+
 class OTPStore(Base):
     __tablename__ = 'otp_store'
 
