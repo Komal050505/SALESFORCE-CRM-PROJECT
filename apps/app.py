@@ -136,6 +136,7 @@ def check_api_performance():
     finally:
         log_info("End of check_api_performance function")
 
+
 # ---------------------------------------- OTP GENERATOR API -----------------------------------------------------------
 
 @app.route('/generate-otp', methods=['POST'])
